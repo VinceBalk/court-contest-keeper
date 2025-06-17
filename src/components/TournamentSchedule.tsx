@@ -37,6 +37,83 @@ const TournamentSchedule = ({
   }>({ top: [], bottom: [] });
   const { toast } = useToast();
 
+  const generateFinalRoundMatches = (group: 'top' | 'bottom', round: number) => {
+    const groupPlayers = players.filter(p => p.group === group);
+    if (groupPlayers.length !== 8) {
+      toast({
+        title: "Error",
+        description: `${group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'} needs exactly 8 players to generate matches`,
+        variant: "destructive"
+      });
+      return [];
+    }
+
+    if (!activeTournament) {
+      toast({
+        title: "Error",
+        description: "No active tournament selected",
+        variant: "destructive"
+      });
+      return [];
+    }
+
+    // Sort players by total points (descending) to rank them
+    const rankedPlayers = [...groupPlayers].sort((a, b) => b.totalPoints - a.totalPoints);
+    
+    const newMatches: Match[] = [];
+
+    // Create balanced pairings based on rankings
+    // Pair 1st & 8th vs 4th & 5th, 2nd & 7th vs 3rd & 6th for each court
+    const pairings = [
+      // Court 1 matches
+      {
+        team1: [rankedPlayers[0], rankedPlayers[7]], // 1st & 8th
+        team2: [rankedPlayers[3], rankedPlayers[4]]  // 4th & 5th
+      },
+      {
+        team1: [rankedPlayers[1], rankedPlayers[6]], // 2nd & 7th
+        team2: [rankedPlayers[2], rankedPlayers[5]]  // 3rd & 6th
+      },
+      // Court 2 matches - create different combinations for variety
+      {
+        team1: [rankedPlayers[0], rankedPlayers[6]], // 1st & 7th
+        team2: [rankedPlayers[2], rankedPlayers[4]]  // 3rd & 5th
+      },
+      {
+        team1: [rankedPlayers[1], rankedPlayers[7]], // 2nd & 8th
+        team2: [rankedPlayers[3], rankedPlayers[5]]  // 4th & 6th
+      },
+      // Additional matches to ensure all combinations
+      {
+        team1: [rankedPlayers[0], rankedPlayers[5]], // 1st & 6th
+        team2: [rankedPlayers[1], rankedPlayers[4]]  // 2nd & 5th
+      },
+      {
+        team1: [rankedPlayers[2], rankedPlayers[7]], // 3rd & 8th
+        team2: [rankedPlayers[3], rankedPlayers[6]]  // 4th & 7th
+      }
+    ];
+
+    pairings.forEach((pairing, matchIndex) => {
+      const court = Math.floor(matchIndex / 3) + 1;
+      newMatches.push({
+        id: `match-${group}-${round}-${matchIndex}`,
+        tournamentId: activeTournament.id,
+        round,
+        group,
+        court: group === 'top' ? court : court + 2,
+        team1: [pairing.team1[0].id, pairing.team1[1].id],
+        team2: [pairing.team2[0].id, pairing.team2[1].id],
+        team1Score: 0,
+        team2Score: 0,
+        specialPoints: {},
+        completed: false
+      });
+    });
+
+    return newMatches;
+  };
+
   const generateRandomMatches = (group: 'top' | 'bottom', round: number) => {
     const groupPlayers = players.filter(p => p.group === group);
     if (groupPlayers.length !== 8) {
@@ -129,6 +206,28 @@ const TournamentSchedule = ({
   };
 
   const generateRoundMatches = () => {
+    // Check if this is the final round (round 3) and use score-based generation
+    if (currentRound === 3) {
+      const topMatches = generateFinalRoundMatches('top', currentRound);
+      const bottomMatches = generateFinalRoundMatches('bottom', currentRound);
+      
+      if (topMatches.length === 0 || bottomMatches.length === 0) {
+        return;
+      }
+      
+      const allNewMatches = [...topMatches, ...bottomMatches];
+      const existingMatches = matches.filter(m => m.round !== currentRound);
+      
+      setMatches([...existingMatches, ...allNewMatches]);
+      
+      toast({
+        title: "Final Round Generated",
+        description: "Round 3 matches created based on previous round scores",
+      });
+      return;
+    }
+
+    // For rounds 1 and 2, use existing logic
     if (isManualMode) {
       const topMatches = generateManualMatches('top', currentRound);
       const bottomMatches = generateManualMatches('bottom', currentRound);
@@ -266,21 +365,26 @@ const TournamentSchedule = ({
         <h2 className="text-2xl font-bold flex items-center gap-2">
           <Calendar className="h-6 w-6 text-blue-600" />
           Round {currentRound} Matches
+          {currentRound === 3 && (
+            <Badge className="bg-yellow-500 text-yellow-900 ml-2">Final Round</Badge>
+          )}
         </h2>
         <div className="flex gap-2">
           {canGenerateMatches && currentRoundMatches.length === 0 && (
             <>
               <Button onClick={generateRoundMatches} className="bg-green-600 hover:bg-green-700">
                 <Shuffle className="h-4 w-4 mr-2" />
-                {isManualMode ? 'Generate Manual' : 'Generate Random'}
+                {currentRound === 3 ? 'Generate Final Round' : (isManualMode ? 'Generate Manual' : 'Generate Random')}
               </Button>
-              <Button 
-                onClick={() => isManualMode ? setIsManualMode(false) : initializeManualPairings()}
-                variant="outline"
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                {isManualMode ? 'Switch to Random' : 'Manual Setup'}
-              </Button>
+              {currentRound !== 3 && (
+                <Button 
+                  onClick={() => isManualMode ? setIsManualMode(false) : initializeManualPairings()}
+                  variant="outline"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  {isManualMode ? 'Switch to Random' : 'Manual Setup'}
+                </Button>
+              )}
             </>
           )}
           {currentRound < 3 && (
@@ -294,6 +398,18 @@ const TournamentSchedule = ({
         </div>
       </div>
 
+      {currentRound === 3 && currentRoundMatches.length === 0 && (
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardContent className="pt-6">
+            <p className="text-yellow-800 text-center">
+              <Trophy className="h-5 w-5 inline mr-2" />
+              Final round matches will be generated based on scores from rounds 1 and 2.
+              Players will be ranked by total points within each group.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {!canGenerateMatches && (
         <Card className="bg-yellow-50 border-yellow-200">
           <CardContent className="pt-6">
@@ -304,7 +420,7 @@ const TournamentSchedule = ({
         </Card>
       )}
 
-      {isManualMode && currentRoundMatches.length === 0 && (
+      {isManualMode && currentRound !== 3 && currentRoundMatches.length === 0 && (
         <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
             <CardTitle className="text-blue-700">Manual Match Setup</CardTitle>
