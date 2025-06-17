@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PlayerManagement from "@/components/PlayerManagement";
 import TournamentSchedule from "@/components/TournamentSchedule";
 import Rankings from "@/components/Rankings";
+import TournamentManagement from "@/components/TournamentManagement";
 import { Trophy, Users, Calendar, Target } from "lucide-react";
 
 export interface Player {
@@ -15,10 +16,26 @@ export interface Player {
   totalSpecials: number;
   totalPoints: number;
   matchesPlayed: number;
+  overallStats: {
+    totalGames: number;
+    totalSpecials: number;
+    totalPoints: number;
+    matchesPlayed: number;
+    tournamentsPlayed: number;
+  };
+}
+
+export interface Tournament {
+  id: string;
+  name: string;
+  date: string;
+  isActive: boolean;
+  completed: boolean;
 }
 
 export interface Match {
   id: string;
+  tournamentId: string;
   round: number;
   group: 'top' | 'bottom';
   court: number;
@@ -32,9 +49,12 @@ export interface Match {
 
 const Index = () => {
   const [players, setPlayers] = useState<Player[]>([]);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [currentRound, setCurrentRound] = useState(1);
 
+  const activeTournamentMatches = matches.filter(m => m.tournamentId === activeTournament?.id);
   const topGroupPlayers = players.filter(p => p.group === 'top');
   const bottomGroupPlayers = players.filter(p => p.group === 'bottom');
 
@@ -47,6 +67,11 @@ const Index = () => {
             <h1 className="text-4xl font-bold text-gray-800">Padel Tournament Manager</h1>
           </div>
           <p className="text-lg text-gray-600">Track your tournaments, matches, and player rankings</p>
+          {activeTournament && (
+            <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+              <p className="text-blue-800 font-medium">Active Tournament: {activeTournament.name}</p>
+            </div>
+          )}
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -65,42 +90,49 @@ const Index = () => {
 
           <Card className="bg-white/80 backdrop-blur-sm border-green-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current Round</CardTitle>
+              <CardTitle className="text-sm font-medium">Tournaments</CardTitle>
               <Calendar className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">{currentRound}/3</div>
-              <p className="text-xs text-gray-600">Tournament Progress</p>
+              <div className="text-2xl font-bold text-green-600">{tournaments.length}</div>
+              <p className="text-xs text-gray-600">
+                Active: {tournaments.filter(t => t.isActive).length}
+              </p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/80 backdrop-blur-sm border-purple-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Matches Completed</CardTitle>
+              <CardTitle className="text-sm font-medium">Current Round</CardTitle>
               <Target className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">
-                {matches.filter(m => m.completed).length}/{matches.length}
+                {activeTournament ? `${currentRound}/3` : '-'}
               </div>
-              <p className="text-xs text-gray-600">This Round</p>
+              <p className="text-xs text-gray-600">Tournament Progress</p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/80 backdrop-blur-sm border-orange-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Courts Active</CardTitle>
+              <CardTitle className="text-sm font-medium">Matches Completed</CardTitle>
               <Trophy className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">4</div>
-              <p className="text-xs text-gray-600">2 per group</p>
+              <div className="text-2xl font-bold text-orange-600">
+                {activeTournamentMatches.filter(m => m.completed).length}/{activeTournamentMatches.length}
+              </div>
+              <p className="text-xs text-gray-600">This Tournament</p>
             </CardContent>
           </Card>
         </div>
 
-        <Tabs defaultValue="players" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm">
+        <Tabs defaultValue="tournaments" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
+            <TabsTrigger value="tournaments" className="data-[state=active]:bg-orange-100">
+              Tournaments
+            </TabsTrigger>
             <TabsTrigger value="players" className="data-[state=active]:bg-blue-100">
               Players & Groups
             </TabsTrigger>
@@ -112,6 +144,18 @@ const Index = () => {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="tournaments">
+            <TournamentManagement 
+              tournaments={tournaments}
+              setTournaments={setTournaments}
+              activeTournament={activeTournament}
+              setActiveTournament={setActiveTournament}
+              setCurrentRound={setCurrentRound}
+              players={players}
+              setPlayers={setPlayers}
+            />
+          </TabsContent>
+
           <TabsContent value="players">
             <PlayerManagement 
               players={players} 
@@ -122,19 +166,21 @@ const Index = () => {
           <TabsContent value="matches">
             <TournamentSchedule 
               players={players}
-              matches={matches}
+              matches={activeTournamentMatches}
               setMatches={setMatches}
               currentRound={currentRound}
               setCurrentRound={setCurrentRound}
               setPlayers={setPlayers}
+              activeTournament={activeTournament}
             />
           </TabsContent>
 
           <TabsContent value="rankings">
             <Rankings 
               players={players}
-              matches={matches}
+              matches={activeTournamentMatches}
               currentRound={currentRound}
+              activeTournament={activeTournament}
             />
           </TabsContent>
         </Tabs>
