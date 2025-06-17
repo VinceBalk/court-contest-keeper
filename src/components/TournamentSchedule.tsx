@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Play, Trophy, Users, Target } from "lucide-react";
-import { Player, Match } from "@/pages/Index";
+import { Calendar, Play, Trophy, Users, Target, Shuffle, Edit } from "lucide-react";
+import { Player, Match, Tournament } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 
 interface TournamentScheduleProps {
@@ -15,6 +14,7 @@ interface TournamentScheduleProps {
   currentRound: number;
   setCurrentRound: (round: number) => void;
   setPlayers: (players: Player[]) => void;
+  activeTournament: Tournament | null;
 }
 
 const TournamentSchedule = ({ 
@@ -23,20 +23,35 @@ const TournamentSchedule = ({
   setMatches, 
   currentRound, 
   setCurrentRound,
-  setPlayers 
+  setPlayers,
+  activeTournament
 }: TournamentScheduleProps) => {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(0);
   const [specialPoints, setSpecialPoints] = useState<{ [playerId: string]: number }>({});
+  const [isManualMode, setIsManualMode] = useState(false);
+  const [manualPairings, setManualPairings] = useState<{
+    top: { team1: [string, string], team2: [string, string] }[];
+    bottom: { team1: [string, string], team2: [string, string] }[];
+  }>({ top: [], bottom: [] });
   const { toast } = useToast();
 
-  const generateMatches = (group: 'top' | 'bottom', round: number) => {
+  const generateRandomMatches = (group: 'top' | 'bottom', round: number) => {
     const groupPlayers = players.filter(p => p.group === group);
     if (groupPlayers.length !== 8) {
       toast({
         title: "Error",
         description: `${group} group needs exactly 8 players to generate matches`,
+        variant: "destructive"
+      });
+      return [];
+    }
+
+    if (!activeTournament) {
+      toast({
+        title: "Error",
+        description: "No active tournament selected",
         variant: "destructive"
       });
       return [];
@@ -54,6 +69,7 @@ const TournamentSchedule = ({
       if (playersForMatch.length === 4) {
         newMatches.push({
           id: `match-${group}-${round}-${matchIndex}`,
+          tournamentId: activeTournament.id,
           round,
           group,
           court: group === 'top' ? court : court + 2, // Bottom group uses courts 3-4
@@ -70,19 +86,96 @@ const TournamentSchedule = ({
     return newMatches;
   };
 
-  const generateRoundMatches = () => {
-    const topMatches = generateMatches('top', currentRound);
-    const bottomMatches = generateMatches('bottom', currentRound);
-    
-    const allNewMatches = [...topMatches, ...bottomMatches];
-    const existingMatches = matches.filter(m => m.round !== currentRound);
-    
-    setMatches([...existingMatches, ...allNewMatches]);
-    
-    toast({
-      title: "Matches Generated",
-      description: `Round ${currentRound} matches have been created`,
+  const generateManualMatches = (group: 'top' | 'bottom', round: number) => {
+    if (!activeTournament) {
+      toast({
+        title: "Error",
+        description: "No active tournament selected",
+        variant: "destructive"
+      });
+      return [];
+    }
+
+    const groupPairings = manualPairings[group];
+    if (groupPairings.length !== 6) {
+      toast({
+        title: "Error",
+        description: `Please set up all 6 matches for ${group} group`,
+        variant: "destructive"
+      });
+      return [];
+    }
+
+    const newMatches: Match[] = [];
+
+    groupPairings.forEach((pairing, matchIndex) => {
+      const court = Math.floor(matchIndex / 3) + 1;
+      newMatches.push({
+        id: `match-${group}-${round}-${matchIndex}`,
+        tournamentId: activeTournament.id,
+        round,
+        group,
+        court: group === 'top' ? court : court + 2,
+        team1: pairing.team1,
+        team2: pairing.team2,
+        team1Score: 0,
+        team2Score: 0,
+        specialPoints: {},
+        completed: false
+      });
     });
+
+    return newMatches;
+  };
+
+  const generateRoundMatches = () => {
+    if (isManualMode) {
+      const topMatches = generateManualMatches('top', currentRound);
+      const bottomMatches = generateManualMatches('bottom', currentRound);
+      
+      if (topMatches.length === 0 || bottomMatches.length === 0) {
+        return;
+      }
+      
+      const allNewMatches = [...topMatches, ...bottomMatches];
+      const existingMatches = matches.filter(m => m.round !== currentRound);
+      
+      setMatches([...existingMatches, ...allNewMatches]);
+      
+      toast({
+        title: "Manual Matches Generated",
+        description: `Round ${currentRound} matches have been created with your pairings`,
+      });
+    } else {
+      const topMatches = generateRandomMatches('top', currentRound);
+      const bottomMatches = generateRandomMatches('bottom', currentRound);
+      
+      const allNewMatches = [...topMatches, ...bottomMatches];
+      const existingMatches = matches.filter(m => m.round !== currentRound);
+      
+      setMatches([...existingMatches, ...allNewMatches]);
+      
+      toast({
+        title: "Random Matches Generated",
+        description: `Round ${currentRound} matches have been randomly created`,
+      });
+    }
+  };
+
+  const initializeManualPairings = () => {
+    const topPlayers = players.filter(p => p.group === 'top');
+    const bottomPlayers = players.filter(p => p.group === 'bottom');
+    
+    const createEmptyPairings = () => Array(6).fill(null).map(() => ({ 
+      team1: ['', ''] as [string, string], 
+      team2: ['', ''] as [string, string] 
+    }));
+
+    setManualPairings({
+      top: createEmptyPairings(),
+      bottom: createEmptyPairings()
+    });
+    setIsManualMode(true);
   };
 
   const submitScore = () => {
@@ -147,6 +240,22 @@ const TournamentSchedule = ({
     });
   };
 
+  const updateManualPairing = (group: 'top' | 'bottom', matchIndex: number, team: 'team1' | 'team2', playerIndex: 0 | 1, playerId: string) => {
+    setManualPairings(prev => ({
+      ...prev,
+      [group]: prev[group].map((pairing, index) => 
+        index === matchIndex 
+          ? {
+              ...pairing,
+              [team]: playerIndex === 0 
+                ? [playerId, pairing[team][1]] as [string, string]
+                : [pairing[team][0], playerId] as [string, string]
+            }
+          : pairing
+      )
+    }));
+  };
+
   const currentRoundMatches = matches.filter(m => m.round === currentRound);
   const canGenerateMatches = players.filter(p => p.group === 'top').length === 8 && 
                             players.filter(p => p.group === 'bottom').length === 8;
@@ -160,10 +269,19 @@ const TournamentSchedule = ({
         </h2>
         <div className="flex gap-2">
           {canGenerateMatches && currentRoundMatches.length === 0 && (
-            <Button onClick={generateRoundMatches} className="bg-green-600 hover:bg-green-700">
-              <Play className="h-4 w-4 mr-2" />
-              Generate Matches
-            </Button>
+            <>
+              <Button onClick={generateRoundMatches} className="bg-green-600 hover:bg-green-700">
+                <Shuffle className="h-4 w-4 mr-2" />
+                {isManualMode ? 'Generate Manual' : 'Generate Random'}
+              </Button>
+              <Button 
+                onClick={() => isManualMode ? setIsManualMode(false) : initializeManualPairings()}
+                variant="outline"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                {isManualMode ? 'Switch to Random' : 'Manual Setup'}
+              </Button>
+            </>
           )}
           {currentRound < 3 && (
             <Button 
@@ -186,63 +304,141 @@ const TournamentSchedule = ({
         </Card>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {['top', 'bottom'].map(group => (
-          <Card key={group} className={`${group === 'top' ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200' : 'bg-gradient-to-br from-blue-50 to-green-50 border-blue-200'}`}>
-            <CardHeader>
-              <CardTitle className={`flex items-center gap-2 ${group === 'top' ? 'text-yellow-700' : 'text-blue-700'}`}>
-                {group === 'top' ? <Trophy className="h-5 w-5" /> : <Target className="h-5 w-5" />}
-                {group.charAt(0).toUpperCase() + group.slice(1)} Group
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {currentRoundMatches
-                  .filter(m => m.group === group)
-                  .map((match) => {
-                    const team1Players = match.team1.map(id => players.find(p => p.id === id)?.name).join(" & ");
-                    const team2Players = match.team2.map(id => players.find(p => p.id === id)?.name).join(" & ");
-                    
-                    return (
-                      <div key={match.id} className="p-4 bg-white/70 rounded-lg border">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium">Court {match.court}</span>
-                          <Badge variant={match.completed ? "default" : "outline"}>
-                            {match.completed ? "Completed" : "Pending"}
-                          </Badge>
-                        </div>
-                        <div className="text-sm space-y-1">
-                          <div className="flex justify-between">
-                            <span>{team1Players}</span>
-                            <span className="font-bold">{match.team1Score}</span>
+      {isManualMode && currentRoundMatches.length === 0 && (
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="text-blue-700">Manual Match Setup</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {(['top', 'bottom'] as const).map(group => (
+                <div key={group}>
+                  <h3 className="font-semibold mb-4 capitalize">{group} Group</h3>
+                  <div className="space-y-4">
+                    {manualPairings[group].map((pairing, matchIndex) => (
+                      <div key={matchIndex} className="p-4 bg-white rounded border">
+                        <h4 className="font-medium mb-2">Match {matchIndex + 1} - Court {group === 'top' ? Math.floor(matchIndex / 3) + 1 : Math.floor(matchIndex / 3) + 3}</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium">Team 1</label>
+                            <div className="space-y-2">
+                              <select
+                                value={pairing.team1[0]}
+                                onChange={(e) => updateManualPairing(group, matchIndex, 'team1', 0, e.target.value)}
+                                className="w-full p-2 border rounded"
+                              >
+                                <option value="">Select Player 1</option>
+                                {players.filter(p => p.group === group).map(player => (
+                                  <option key={player.id} value={player.id}>{player.name}</option>
+                                ))}
+                              </select>
+                              <select
+                                value={pairing.team1[1]}
+                                onChange={(e) => updateManualPairing(group, matchIndex, 'team1', 1, e.target.value)}
+                                className="w-full p-2 border rounded"
+                              >
+                                <option value="">Select Player 2</option>
+                                {players.filter(p => p.group === group).map(player => (
+                                  <option key={player.id} value={player.id}>{player.name}</option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
-                          <div className="flex justify-between">
-                            <span>{team2Players}</span>
-                            <span className="font-bold">{match.team2Score}</span>
+                          <div>
+                            <label className="text-sm font-medium">Team 2</label>
+                            <div className="space-y-2">
+                              <select
+                                value={pairing.team2[0]}
+                                onChange={(e) => updateManualPairing(group, matchIndex, 'team2', 0, e.target.value)}
+                                className="w-full p-2 border rounded"
+                              >
+                                <option value="">Select Player 1</option>
+                                {players.filter(p => p.group === group).map(player => (
+                                  <option key={player.id} value={player.id}>{player.name}</option>
+                                ))}
+                              </select>
+                              <select
+                                value={pairing.team2[1]}
+                                onChange={(e) => updateManualPairing(group, matchIndex, 'team2', 1, e.target.value)}
+                                className="w-full p-2 border rounded"
+                              >
+                                <option value="">Select Player 2</option>
+                                {players.filter(p => p.group === group).map(player => (
+                                  <option key={player.id} value={player.id}>{player.name}</option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
                         </div>
-                        {!match.completed && (
-                          <Button
-                            onClick={() => {
-                              setSelectedMatch(match);
-                              setTeam1Score(0);
-                              setTeam2Score(0);
-                              setSpecialPoints({});
-                            }}
-                            className="w-full mt-2"
-                            size="sm"
-                          >
-                            Enter Score
-                          </Button>
-                        )}
                       </div>
-                    );
-                  })}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {currentRoundMatches.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {['top', 'bottom'].map(group => (
+            <Card key={group} className={`${group === 'top' ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200' : 'bg-gradient-to-br from-blue-50 to-green-50 border-blue-200'}`}>
+              <CardHeader>
+                <CardTitle className={`flex items-center gap-2 ${group === 'top' ? 'text-yellow-700' : 'text-blue-700'}`}>
+                  {group === 'top' ? <Trophy className="h-5 w-5" /> : <Target className="h-5 w-5" />}
+                  {group.charAt(0).toUpperCase() + group.slice(1)} Group
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {currentRoundMatches
+                    .filter(m => m.group === group)
+                    .map((match) => {
+                      const team1Players = match.team1.map(id => players.find(p => p.id === id)?.name).join(" & ");
+                      const team2Players = match.team2.map(id => players.find(p => p.id === id)?.name).join(" & ");
+                      
+                      return (
+                        <div key={match.id} className="p-4 bg-white/70 rounded-lg border">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-medium">Court {match.court}</span>
+                            <Badge variant={match.completed ? "default" : "outline"}>
+                              {match.completed ? "Completed" : "Pending"}
+                            </Badge>
+                          </div>
+                          <div className="text-sm space-y-1">
+                            <div className="flex justify-between">
+                              <span>{team1Players}</span>
+                              <span className="font-bold">{match.team1Score}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{team2Players}</span>
+                              <span className="font-bold">{match.team2Score}</span>
+                            </div>
+                          </div>
+                          {!match.completed && (
+                            <Button
+                              onClick={() => {
+                                setSelectedMatch(match);
+                                setTeam1Score(0);
+                                setTeam2Score(0);
+                                setSpecialPoints({});
+                              }}
+                              className="w-full mt-2"
+                              size="sm"
+                            >
+                              Enter Score
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {selectedMatch && (
         <Card className="bg-white/95 backdrop-blur-sm border-green-200">
