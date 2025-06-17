@@ -42,7 +42,7 @@ const TournamentSchedule = ({
     if (groupPlayers.length !== 8) {
       toast({
         title: "Error",
-        description: `${group} group needs exactly 8 players to generate matches`,
+        description: `${group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'} needs exactly 8 players to generate matches`,
         variant: "destructive"
       });
       return [];
@@ -100,7 +100,7 @@ const TournamentSchedule = ({
     if (groupPairings.length !== 6) {
       toast({
         title: "Error",
-        description: `Please set up all 6 matches for ${group} group`,
+        description: `Please set up all 6 matches for ${group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}`,
         variant: "destructive"
       });
       return [];
@@ -313,7 +313,7 @@ const TournamentSchedule = ({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {(['top', 'bottom'] as const).map(group => (
                 <div key={group}>
-                  <h3 className="font-semibold mb-4 capitalize">{group} Group</h3>
+                  <h3 className="font-semibold mb-4">{group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}</h3>
                   <div className="space-y-4">
                     {manualPairings[group].map((pairing, matchIndex) => (
                       <div key={matchIndex} className="p-4 bg-white rounded border">
@@ -387,7 +387,7 @@ const TournamentSchedule = ({
               <CardHeader>
                 <CardTitle className={`flex items-center gap-2 ${group === 'top' ? 'text-yellow-700' : 'text-blue-700'}`}>
                   {group === 'top' ? <Trophy className="h-5 w-5" /> : <Target className="h-5 w-5" />}
-                  {group.charAt(0).toUpperCase() + group.slice(1)} Group
+                  {group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}
                 </CardTitle>
               </CardHeader>
               <CardContent>

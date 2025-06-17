@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -101,7 +100,7 @@ const Rankings = ({ players, matches, currentRound, activeTournament }: Rankings
                 ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
                 : 'bg-blue-100 text-blue-700 border-blue-300'
             }`}>
-              Current: {player.group === 'top' ? 'Top' : 'Bottom'} Group
+              Current: {player.group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}
             </Badge>
           </div>
         </div>
@@ -142,7 +141,7 @@ const Rankings = ({ players, matches, currentRound, activeTournament }: Rankings
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-yellow-700">
                       <Trophy className="h-6 w-6" />
-                      Top Group Rankings
+                      Linker Rijtje Rankings
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -151,7 +150,7 @@ const Rankings = ({ players, matches, currentRound, activeTournament }: Rankings
                         renderTournamentPlayerRow(player, index + 1, 'top')
                       )}
                       {topGroupPlayers.length === 0 && (
-                        <p className="text-center text-gray-500 py-8">No players in top group yet</p>
+                        <p className="text-center text-gray-500 py-8">No players in Linker Rijtje yet</p>
                       )}
                     </div>
                   </CardContent>
@@ -161,7 +160,7 @@ const Rankings = ({ players, matches, currentRound, activeTournament }: Rankings
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-blue-700">
                       <Award className="h-6 w-6" />
-                      Bottom Group Rankings
+                      Rechter Rijtje Rankings
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -170,7 +169,7 @@ const Rankings = ({ players, matches, currentRound, activeTournament }: Rankings
                         renderTournamentPlayerRow(player, index + 1, 'bottom')
                       )}
                       {bottomGroupPlayers.length === 0 && (
-                        <p className="text-center text-gray-500 py-8">No players in bottom group yet</p>
+                        <p className="text-center text-gray-500 py-8">No players in Rechter Rijtje yet</p>
                       )}
                     </div>
                   </CardContent>
@@ -198,7 +197,7 @@ const Rankings = ({ players, matches, currentRound, activeTournament }: Rankings
                           <div className="p-4 bg-green-100 rounded-lg">
                             <h4 className="font-bold text-green-700 mb-2">🔥 Promotion Winner</h4>
                             <p className="text-green-800">
-                              {bottomGroupPlayers[0]?.name} promotes to top group
+                              {bottomGroupPlayers[0]?.name} promotes to Linker Rijtje
                             </p>
                           </div>
                         )}
@@ -207,7 +206,7 @@ const Rankings = ({ players, matches, currentRound, activeTournament }: Rankings
                           <div className="p-4 bg-red-100 rounded-lg">
                             <h4 className="font-bold text-red-700 mb-2">⬇️ Relegation</h4>
                             <p className="text-red-800">
-                              {topGroupPlayers[topGroupPlayers.length - 1]?.name} relegates to bottom group
+                              {topGroupPlayers[topGroupPlayers.length - 1]?.name} relegates to Rechter Rijtje
                             </p>
                           </div>
                         )}

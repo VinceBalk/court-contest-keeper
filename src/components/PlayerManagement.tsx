@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
     if (groupPlayers.length >= 8) {
       toast({
         title: "Group Full",
-        description: `The ${newPlayerGroup} group already has 8 players`,
+        description: `The ${newPlayerGroup === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'} group already has 8 players`,
         variant: "destructive"
       });
       return;
@@ -63,7 +62,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
     
     toast({
       title: "Player Added",
-      description: `${newPlayer.name} has been added to the ${newPlayerGroup} group`,
+      description: `${newPlayer.name} has been added to the ${newPlayerGroup === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'} group`,
     });
   };
 
@@ -174,7 +173,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
             ? 'bg-yellow-100 text-yellow-700 border-yellow-300'
             : 'bg-blue-100 text-blue-700 border-blue-300'
         }`}>
-          {groupType === 'top' ? 'Top' : 'Bottom'}
+          {groupType === 'top' ? 'Linker' : 'Rechter'}
         </Badge>
         <Button
           variant="outline"
@@ -207,12 +206,12 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
               className="flex-1"
             />
             <Select value={newPlayerGroup} onValueChange={(value: 'top' | 'bottom') => setNewPlayerGroup(value)}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="top">Top Group</SelectItem>
-                <SelectItem value="bottom">Bottom Group</SelectItem>
+                <SelectItem value="top">Linker Rijtje</SelectItem>
+                <SelectItem value="bottom">Rechter Rijtje</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={addPlayer} className="bg-blue-600 hover:bg-blue-700">
@@ -227,14 +226,14 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-yellow-700">
               <Crown className="h-5 w-5" />
-              Top Group ({topGroupPlayers.length}/8)
+              Linker Rijtje ({topGroupPlayers.length}/8)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {topGroupPlayers.map((player) => renderPlayerCard(player, 'top'))}
               {topGroupPlayers.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No players in top group yet</p>
+                <p className="text-center text-gray-500 py-8">No players in Linker Rijtje yet</p>
               )}
             </div>
           </CardContent>
@@ -244,14 +243,14 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
               <Target className="h-5 w-5" />
-              Bottom Group ({bottomGroupPlayers.length}/8)
+              Rechter Rijtje ({bottomGroupPlayers.length}/8)
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {bottomGroupPlayers.map((player) => renderPlayerCard(player, 'bottom'))}
               {bottomGroupPlayers.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No players in bottom group yet</p>
+                <p className="text-center text-gray-500 py-8">No players in Rechter Rijtje yet</p>
               )}
             </div>
           </CardContent>
