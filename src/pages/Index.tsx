@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -5,7 +6,8 @@ import PlayerManagement from "@/components/PlayerManagement";
 import TournamentSchedule from "@/components/TournamentSchedule";
 import Rankings from "@/components/Rankings";
 import TournamentManagement from "@/components/TournamentManagement";
-import { Trophy, Users, Calendar, Target } from "lucide-react";
+import SpecialManagement, { SpecialType } from "@/components/SpecialManagement";
+import { Trophy, Users, Calendar, Target, Star } from "lucide-react";
 
 export interface Player {
   id: string;
@@ -52,6 +54,13 @@ const Index = () => {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [currentRound, setCurrentRound] = useState(1);
+  const [specialTypes, setSpecialTypes] = useState<SpecialType[]>([
+    { id: 'ace', name: 'Ace', description: 'Unreturnable serve', isActive: true },
+    { id: 'winner', name: 'Winner', description: 'Shot that wins the point', isActive: true },
+    { id: 'smash', name: 'Smash', description: 'Overhead winning shot', isActive: true },
+    { id: 'via-glass', name: 'Via Glass', description: 'Shot off the glass walls', isActive: true },
+    { id: 'out-of-cage', name: 'Out of Cage', description: 'Shot that goes out of bounds', isActive: true },
+  ]);
 
   const activeTournamentMatches = matches.filter(m => m.tournamentId === activeTournament?.id);
   const topGroupPlayers = players.filter(p => p.group === 'top');
@@ -115,30 +124,33 @@ const Index = () => {
 
           <Card className="bg-white/80 backdrop-blur-sm border-orange-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Matches Completed</CardTitle>
-              <Trophy className="h-4 w-4 text-orange-600" />
+              <CardTitle className="text-sm font-medium">Special Types</CardTitle>
+              <Star className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
-                {activeTournamentMatches.filter(m => m.completed).length}/{activeTournamentMatches.length}
+                {specialTypes.filter(s => s.isActive).length}
               </div>
-              <p className="text-xs text-gray-600">This Tournament</p>
+              <p className="text-xs text-gray-600">Active Special Types</p>
             </CardContent>
           </Card>
         </div>
 
         <Tabs defaultValue="tournaments" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="tournaments" className="data-[state=active]:bg-orange-100">
               Tournaments
             </TabsTrigger>
             <TabsTrigger value="players" className="data-[state=active]:bg-blue-100">
               Players & Groups
             </TabsTrigger>
+            <TabsTrigger value="specials" className="data-[state=active]:bg-purple-100">
+              Special Types
+            </TabsTrigger>
             <TabsTrigger value="matches" className="data-[state=active]:bg-green-100">
               Matches & Schedule
             </TabsTrigger>
-            <TabsTrigger value="rankings" className="data-[state=active]:bg-purple-100">
+            <TabsTrigger value="rankings" className="data-[state=active]:bg-yellow-100">
               Rankings & Stats
             </TabsTrigger>
           </TabsList>
@@ -162,6 +174,13 @@ const Index = () => {
             />
           </TabsContent>
 
+          <TabsContent value="specials">
+            <SpecialManagement 
+              specialTypes={specialTypes}
+              setSpecialTypes={setSpecialTypes}
+            />
+          </TabsContent>
+
           <TabsContent value="matches">
             <TournamentSchedule 
               players={players}
@@ -171,6 +190,7 @@ const Index = () => {
               setCurrentRound={setCurrentRound}
               setPlayers={setPlayers}
               activeTournament={activeTournament}
+              specialTypes={specialTypes}
             />
           </TabsContent>
 

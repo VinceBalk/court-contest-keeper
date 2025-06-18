@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Trophy, Shuffle, Edit } from "lucide-react";
 import { Player, Match, Tournament } from "@/pages/Index";
+import { SpecialType } from "./SpecialManagement";
 import { useToast } from "@/hooks/use-toast";
 import { generateFinalRoundMatches, generateRandomMatches, generateManualMatches } from "@/utils/matchGeneration";
 import ScoreEntry from "./ScoreEntry";
@@ -19,6 +19,7 @@ interface TournamentScheduleProps {
   setCurrentRound: (round: number) => void;
   setPlayers: (players: Player[]) => void;
   activeTournament: Tournament | null;
+  specialTypes: SpecialType[];
 }
 
 const TournamentSchedule = ({ 
@@ -28,7 +29,8 @@ const TournamentSchedule = ({
   currentRound, 
   setCurrentRound,
   setPlayers,
-  activeTournament
+  activeTournament,
+  specialTypes
 }: TournamentScheduleProps) => {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
@@ -273,6 +275,7 @@ const TournamentSchedule = ({
         <ScoreEntry 
           match={selectedMatch}
           players={players}
+          specialTypes={specialTypes}
           onSubmitScore={handleSubmitScore}
           onCancel={() => setSelectedMatch(null)}
         />

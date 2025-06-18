@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Plus, X } from "lucide-react";
+import { Users, X } from "lucide-react";
 import { Player, Match } from "@/pages/Index";
+import { SpecialType } from "./SpecialManagement";
 import { useToast } from "@/hooks/use-toast";
 
 interface ScoreEntryProps {
   match: Match;
   players: Player[];
+  specialTypes: SpecialType[];
   onSubmitScore: (
     match: Match, 
     team1Score: number, 
@@ -20,19 +22,13 @@ interface ScoreEntryProps {
   onCancel: () => void;
 }
 
-const SPECIAL_TYPES = [
-  "Ace",
-  "Via Glass", 
-  "Out of Cage",
-  "Winner",
-  "Smash"
-];
-
-const ScoreEntry = ({ match, players, onSubmitScore, onCancel }: ScoreEntryProps) => {
+const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: ScoreEntryProps) => {
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(8);
   const [specialPoints, setSpecialPoints] = useState<{ [playerId: string]: { count: number; type: string }[] }>({});
   const { toast } = useToast();
+
+  const activeSpecialTypes = specialTypes.filter(s => s.isActive);
 
   const handleTeam1ScoreChange = (value: number) => {
     if (value >= 0 && value <= 8) {
@@ -132,9 +128,9 @@ const ScoreEntry = ({ match, players, onSubmitScore, onCancel }: ScoreEntryProps
                         <SelectValue placeholder="Add special" />
                       </SelectTrigger>
                       <SelectContent>
-                        {SPECIAL_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
+                        {activeSpecialTypes.map((specialType) => (
+                          <SelectItem key={specialType.id} value={specialType.name}>
+                            {specialType.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
