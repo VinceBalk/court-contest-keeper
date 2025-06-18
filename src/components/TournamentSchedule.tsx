@@ -56,8 +56,8 @@ const TournamentSchedule = ({
 
       // Check if this is the final round (round 3) and use score-based generation
       if (currentRound === 3) {
-        topMatches = generateFinalRoundMatches('top', currentRound, players, activeTournament);
-        bottomMatches = generateFinalRoundMatches('bottom', currentRound, players, activeTournament);
+        topMatches = generateFinalRoundMatches('top', currentRound, activePlayers, activeTournament);
+        bottomMatches = generateFinalRoundMatches('bottom', currentRound, activePlayers, activeTournament);
         
         toast({
           title: "Final Round Generated",
@@ -72,8 +72,8 @@ const TournamentSchedule = ({
           description: `Round ${currentRound} matches have been created with your pairings`,
         });
       } else {
-        topMatches = generateRandomMatches('top', currentRound, players, activeTournament);
-        bottomMatches = generateRandomMatches('bottom', currentRound, players, activeTournament);
+        topMatches = generateRandomMatches('top', currentRound, activePlayers, activeTournament);
+        bottomMatches = generateRandomMatches('bottom', currentRound, activePlayers, activeTournament);
         
         toast({
           title: "Random Matches Generated",
@@ -197,8 +197,9 @@ const TournamentSchedule = ({
   };
 
   const currentRoundMatches = matches.filter(m => m.round === currentRound);
-  const topGroupPlayers = players.filter(p => p.group === 'top');
-  const bottomGroupPlayers = players.filter(p => p.group === 'bottom');
+  const activePlayers = players.filter(p => p.isActive);
+  const topGroupPlayers = activePlayers.filter(p => p.group === 'top').sort((a, b) => a.name.localeCompare(b.name));
+  const bottomGroupPlayers = activePlayers.filter(p => p.group === 'bottom').sort((a, b) => a.name.localeCompare(b.name));
   
   // Check if both groups have even numbers of players (minimum 4 each for doubles)
   const canGenerateMatches = topGroupPlayers.length >= 4 && topGroupPlayers.length % 2 === 0 && 
@@ -259,9 +260,11 @@ const TournamentSchedule = ({
         <Card className="bg-yellow-50 border-yellow-200">
           <CardContent className="pt-6">
             <p className="text-yellow-800 text-center">
-              Both groups need at least 4 players each with even numbers to generate matches.
+              Both groups need at least 4 active players each with even numbers to generate matches.
               <br />
-              Current: Linker Rijtje ({topGroupPlayers.length}), Rechter Rijtje ({bottomGroupPlayers.length})
+              Current Active: Linker Rijtje ({topGroupPlayers.length}), Rechter Rijtje ({bottomGroupPlayers.length})
+              <br />
+              <span className="text-sm">Use the Players & Groups tab to activate players for the tournament (max 8 per group)</span>
             </p>
           </CardContent>
         </Card>
