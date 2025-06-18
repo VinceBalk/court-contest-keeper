@@ -25,13 +25,23 @@ const MatchGenerationControls = ({
     return null;
   }
 
+  const getButtonText = () => {
+    if (currentRound === 1) {
+      return isManualMode ? 'Preview Manual' : 'Preview Random';
+    } else if (currentRound === 2) {
+      return 'Preview Round 2 (Score-Based)';
+    } else {
+      return 'Preview Final Round';
+    }
+  };
+
   return (
     <div className="flex gap-2">
       <Button onClick={onGeneratePreview} className="bg-green-600 hover:bg-green-700">
         <Shuffle className="h-4 w-4 mr-2" />
-        {currentRound === 3 ? 'Preview Final Round' : (isManualMode ? 'Preview Manual' : 'Preview Random')}
+        {getButtonText()}
       </Button>
-      {currentRound !== 3 && (
+      {currentRound === 1 && (
         <Button 
           onClick={onToggleManualMode}
           variant="outline"

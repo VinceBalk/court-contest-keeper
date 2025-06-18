@@ -88,6 +88,44 @@ export const useCreateMatch = () => {
   });
 };
 
+export const useCreateMultipleMatches = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (matches: (Omit<Match, 'id'> & { tournamentId: string })[]) => {
+      const matchData = matches.map(match => ({
+        tournament_id: match.tournamentId,
+        round: match.round,
+        match_number: parseInt(match.court.toString()) || 1,
+        court_number: match.court,
+        player1_id: match.team1[0] || null,
+        player1_partner_id: match.team1[1] || null,
+        player2_id: match.team2[0] || null,
+        player2_partner_id: match.team2[1] || null,
+        status: match.completed ? 'completed' : 'pending',
+        score: {
+          team1_score: match.team1Score,
+          team2_score: match.team2Score,
+          special_points: match.specialPoints,
+        },
+        winner_team: match.winnerId ? 
+          (match.team1.includes(match.winnerId) ? 1 : 2) : null,
+      }));
+
+      const { data, error } = await supabase
+        .from('matches')
+        .insert(matchData)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+    },
+  });
+};
+
 export const useUpdateMatch = () => {
   const queryClient = useQueryClient();
   

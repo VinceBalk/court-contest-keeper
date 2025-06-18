@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Shuffle, Trophy, Target, Trash2 } from "lucide-react";
+import { Calendar, Shuffle, Trophy, Target, Trash2, Save, CheckCircle } from "lucide-react";
 import { Player, Match, Tournament } from "@/pages/Index";
 import { SpecialType } from "./SpecialManagement";
 import MatchDisplay from "./MatchDisplay";
@@ -12,7 +13,7 @@ import MatchPreview from "./MatchPreview";
 import ScoreEntry from "./ScoreEntry";
 import ManualPairingSetup from "./ManualPairingSetup";
 import MatchGenerationControls from "./MatchGenerationControls";
-import { useDeleteRoundMatches } from "@/hooks/useMatches";
+import { useDeleteRoundMatches, useCreateMultipleMatches } from "@/hooks/useMatches";
 import { useToast } from "@/hooks/use-toast";
 import { 
   generateFinalRoundMatches, 
@@ -48,11 +49,12 @@ const TournamentSchedule = ({
     top: { team1: [string, string], team2: [string, string] }[];
     bottom: { team1: [string, string], team2: [string, string] }[];
   }>({
-    top: Array(6).fill({ team1: ['', ''], team2: ['', ''] }),
-    bottom: Array(6).fill({ team1: ['', ''], team2: ['', ''] })
+    top: Array(6).fill(null).map(() => ({ team1: ['', ''], team2: ['', ''] })),
+    bottom: Array(6).fill(null).map(() => ({ team1: ['', ''], team2: ['', ''] }))
   });
 
   const deleteRoundMatches = useDeleteRoundMatches();
+  const createMultipleMatches = useCreateMultipleMatches();
   const { toast } = useToast();
 
   const activePlayers = players.filter(p => p.isActive);
@@ -64,6 +66,9 @@ const TournamentSchedule = ({
   const hasPreviewMatches = previewMatches.length > 0;
 
   const canGenerateMatches = topGroupPlayers.length === 8 && bottomGroupPlayers.length === 8;
+
+  // Check if current round is completed (all matches finished)
+  const isRoundCompleted = hasCurrentRoundMatches && currentRoundMatches.every(m => m.completed);
 
   useEffect(() => {
     // Initialize manual pairings from local storage if available
@@ -87,13 +92,12 @@ const TournamentSchedule = ({
   ) => {
     setManualPairings(prev => {
       const updatedPairings = { ...prev };
+      const newTeam = [...(updatedPairings[group][matchIndex][team])];
+      newTeam[playerIndex] = playerId;
       updatedPairings[group][matchIndex] = {
         ...updatedPairings[group][matchIndex],
-        [team]: [
-          ...(team === 'team1' ? updatedPairings[group][matchIndex].team1 : updatedPairings[group][matchIndex].team2)
-        ]
+        [team]: newTeam as [string, string]
       };
-      updatedPairings[group][matchIndex][team][playerIndex] = playerId;
       return updatedPairings;
     });
   };
@@ -103,14 +107,15 @@ const TournamentSchedule = ({
 
     let newMatches: Match[] = [];
 
-    if (currentRound === 3) {
-      // Final round: generate matches based on rankings
+    if (currentRound === 2 || currentRound === 3) {
+      // For rounds 2 and 3: generate matches based on rankings from previous rounds
+      const previousMatches = matches.filter(m => m.round < currentRound);
       newMatches = [
-        ...generateFinalRoundMatches('top', currentRound, players, activeTournament),
-        ...generateFinalRoundMatches('bottom', currentRound, players, activeTournament)
+        ...generateFinalRoundMatches('top', currentRound, players, activeTournament, previousMatches),
+        ...generateFinalRoundMatches('bottom', currentRound, players, activeTournament, previousMatches)
       ];
     } else {
-      // Regular rounds: generate random or manual matches
+      // Round 1: generate random or manual matches
       if (isManualMode) {
         // Generate matches based on manual pairings
         newMatches = [
@@ -129,16 +134,63 @@ const TournamentSchedule = ({
     setPreviewMatches(newMatches);
   };
 
-  const confirmMatches = () => {
+  const confirmMatches = async () => {
     if (previewMatches.length === 0) return;
 
-    // Add the new matches to the existing matches
-    const updatedMatches = [...matches, ...previewMatches];
-    setMatches(updatedMatches);
-    localStorage.setItem('tournament-matches', JSON.stringify(updatedMatches));
+    try {
+      // Save matches to database
+      await createMultipleMatches.mutateAsync(previewMatches);
 
-    // Clear the preview matches
-    setPreviewMatches([]);
+      // Add the new matches to the existing matches
+      const updatedMatches = [...matches, ...previewMatches];
+      setMatches(updatedMatches);
+      localStorage.setItem('tournament-matches', JSON.stringify(updatedMatches));
+
+      // Clear the preview matches
+      setPreviewMatches([]);
+
+      toast({
+        title: "Success",
+        description: `Round ${currentRound} matches have been saved successfully.`,
+      });
+    } catch (error) {
+      console.error('Error saving matches:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save matches. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const saveManualMatches = async () => {
+    try {
+      // Generate matches from manual pairings
+      const newMatches = [
+        ...generateManualMatches('top', currentRound, manualPairings.top, activeTournament),
+        ...generateManualMatches('bottom', currentRound, manualPairings.bottom, activeTournament)
+      ];
+
+      // Save matches to database
+      await createMultipleMatches.mutateAsync(newMatches);
+
+      // Add the new matches to the existing matches
+      const updatedMatches = [...matches, ...newMatches];
+      setMatches(updatedMatches);
+      localStorage.setItem('tournament-matches', JSON.stringify(updatedMatches));
+
+      toast({
+        title: "Success",
+        description: "Manual matches have been saved successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error saving manual matches:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save manual matches. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const cancelPreview = () => {
@@ -184,6 +236,21 @@ const TournamentSchedule = ({
     }
   };
 
+  const handleCompleteRound = () => {
+    if (currentRound < 3) {
+      setCurrentRound(currentRound + 1);
+      toast({
+        title: "Round Completed",
+        description: `Round ${currentRound} completed. Now on Round ${currentRound + 1}.`,
+      });
+    } else {
+      toast({
+        title: "Tournament Complete",
+        description: "All rounds have been completed!",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
@@ -192,8 +259,19 @@ const TournamentSchedule = ({
             <CardTitle className="flex items-center gap-2 text-blue-700">
               <Calendar className="h-5 w-5" />
               Tournament Schedule - Round {currentRound}
+              {currentRound === 2 && <Badge className="ml-2 bg-orange-500">Score-Based</Badge>}
+              {currentRound === 3 && <Badge className="ml-2 bg-purple-500">Final Round</Badge>}
             </CardTitle>
             <div className="flex items-center gap-2">
+              {isRoundCompleted && (
+                <Button
+                  onClick={handleCompleteRound}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Complete Round
+                </Button>
+              )}
               {hasCurrentRoundMatches && (
                 <Button
                   onClick={handleDeleteRoundMatches}
@@ -238,6 +316,22 @@ const TournamentSchedule = ({
             </Alert>
           )}
 
+          {currentRound === 2 && (
+            <Alert className="mb-4 border-orange-200 bg-orange-50">
+              <AlertDescription className="text-orange-800">
+                Round 2 matches are generated based on Round 1 scores. Players are ranked by their total points and paired strategically.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {currentRound === 3 && (
+            <Alert className="mb-4 border-purple-200 bg-purple-50">
+              <AlertDescription className="text-purple-800">
+                Round 3 (Final): Top 4 players compete randomly among themselves, bottom 4 players compete randomly among themselves. Groups never mix.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <MatchGenerationControls
             currentRound={currentRound}
             canGenerateMatches={canGenerateMatches}
@@ -250,12 +344,29 @@ const TournamentSchedule = ({
         </CardContent>
       </Card>
 
-      {isManualMode && canGenerateMatches && currentRound !== 3 && (
-        <ManualPairingSetup 
-          manualPairings={manualPairings}
-          players={players}
-          onUpdatePairing={updateManualPairings}
-        />
+      {isManualMode && canGenerateMatches && currentRound === 1 && (
+        <Card className="bg-blue-50 border-blue-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-blue-700">Manual Match Setup - Round 1</CardTitle>
+              <Button 
+                onClick={saveManualMatches}
+                className="bg-blue-600 hover:bg-blue-700"
+                disabled={createMultipleMatches.isPending}
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {createMultipleMatches.isPending ? 'Saving...' : 'Save Manual Matches'}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ManualPairingSetup 
+              manualPairings={manualPairings}
+              players={players}
+              onUpdatePairing={updateManualPairings}
+            />
+          </CardContent>
+        </Card>
       )}
 
       {hasPreviewMatches && (
