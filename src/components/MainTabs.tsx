@@ -47,7 +47,9 @@ const MainTabs = ({
   const permissions = useRolePermissions(userRoles);
   const visibleTabs = useTabConfiguration(permissions);
 
-  const activeTournamentMatches = matches.filter(m => m.tournamentId === activeTournament?.id);
+  const activeTournamentMatches = matches.filter(m => 
+    !activeTournament || m.tournamentId === activeTournament?.id
+  );
 
   // If current active tab is not visible, switch to first visible tab
   React.useEffect(() => {

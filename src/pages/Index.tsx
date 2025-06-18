@@ -50,11 +50,17 @@ export interface Match {
   team2Score: number;
   completed: boolean;
   round: number;
+  group?: 'top' | 'bottom';
+  tournamentId?: string;
   specialPoints?: { [playerId: string]: number | { [specialType: string]: number } };
   winnerId?: string;
 }
 
 const Index = () => {
+  // State for active tab
+  const [activeTab, setActiveTab] = useState("tournaments");
+  const [currentRound, setCurrentRound] = useState(1);
+
   // Use React Query hooks to fetch data from Supabase
   const { data: tournaments = [], isLoading: tournamentsLoading } = useTournaments();
   const { data: players = [], isLoading: playersLoading } = usePlayers();
@@ -67,6 +73,9 @@ const Index = () => {
   // Local state for temporary tournament data (will be persisted via mutations)
   const [localPlayers, setLocalPlayers] = useState<Player[]>([]);
   const [localMatches, setLocalMatches] = useState<Match[]>([]);
+  const [localTournaments, setLocalTournaments] = useState<Tournament[]>([]);
+  const [localActiveTournament, setLocalActiveTournament] = useState<Tournament | null>(null);
+  const [localSpecialTypes, setLocalSpecialTypes] = useState(specials);
 
   // Merge database players with local tournament-specific data
   const mergedPlayers = players.map(dbPlayer => {
@@ -76,6 +85,10 @@ const Index = () => {
 
   // Merge database matches with local tournament-specific data
   const mergedMatches = matches.length > 0 ? matches : localMatches;
+
+  // Use database tournaments or local ones
+  const mergedTournaments = tournaments.length > 0 ? tournaments : localTournaments;
+  const finalActiveTournament = activeTournament || localActiveTournament;
 
   if (tournamentsLoading || playersLoading || specialsLoading) {
     return (
@@ -91,16 +104,23 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <div className="container mx-auto px-4 py-6 lg:py-8">
-        <MainHeader activeTournament={activeTournament} />
+        <MainHeader activeTournament={finalActiveTournament} />
         
         <MainTabs 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
           players={mergedPlayers}
           setPlayers={setLocalPlayers}
-          tournaments={tournaments}
+          tournaments={mergedTournaments}
+          setTournaments={setLocalTournaments}
           matches={mergedMatches}
           setMatches={setLocalMatches}
-          activeTournament={activeTournament}
-          specialTypes={specials}
+          activeTournament={finalActiveTournament}
+          setActiveTournament={setLocalActiveTournament}
+          setCurrentRound={setCurrentRound}
+          currentRound={currentRound}
+          specialTypes={localSpecialTypes}
+          setSpecialTypes={setLocalSpecialTypes}
         />
       </div>
       <Toaster />

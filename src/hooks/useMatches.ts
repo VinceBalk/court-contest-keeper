@@ -3,6 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Match } from '@/pages/Index';
 
+interface ScoreData {
+  team1_score?: number;
+  team2_score?: number;
+  special_points?: { [playerId: string]: number };
+}
+
 export const useMatches = (tournamentId?: string) => {
   return useQuery({
     queryKey: ['matches', tournamentId],
@@ -21,19 +27,25 @@ export const useMatches = (tournamentId?: string) => {
       
       if (error) throw error;
       
-      return data.map(match => ({
-        id: match.id,
-        court: match.court_number || 1,
-        team1: [match.player1_id, match.player1_partner_id].filter(Boolean) as string[],
-        team2: [match.player2_id, match.player2_partner_id].filter(Boolean) as string[],
-        team1Score: match.score?.team1_score || 0,
-        team2Score: match.score?.team2_score || 0,
-        completed: match.status === 'completed',
-        round: match.round,
-        specialPoints: match.score?.special_points || {},
-        winnerId: match.winner_team === 1 ? (match.player1_id || '') : 
-                 match.winner_team === 2 ? (match.player2_id || '') : undefined,
-      })) as Match[];
+      return data.map(match => {
+        const scoreData = match.score as ScoreData || {};
+        
+        return {
+          id: match.id,
+          court: match.court_number || 1,
+          team1: [match.player1_id, match.player1_partner_id].filter(Boolean) as string[],
+          team2: [match.player2_id, match.player2_partner_id].filter(Boolean) as string[],
+          team1Score: scoreData.team1_score || 0,
+          team2Score: scoreData.team2_score || 0,
+          completed: match.status === 'completed',
+          round: match.round,
+          group: 'top' as 'top' | 'bottom', // Default group, should be managed in app logic
+          tournamentId: match.tournament_id,
+          specialPoints: scoreData.special_points || {},
+          winnerId: match.winner_team === 1 ? (match.player1_id || '') : 
+                   match.winner_team === 2 ? (match.player2_id || '') : undefined,
+        } as Match;
+      });
     },
     enabled: !!tournamentId || tournamentId === undefined,
   });
@@ -49,7 +61,7 @@ export const useCreateMatch = () => {
         .insert({
           tournament_id: match.tournamentId,
           round: match.round,
-          match_number: parseInt(match.id) || 1,
+          match_number: parseInt(match.court.toString()) || 1,
           court_number: match.court,
           player1_id: match.team1[0] || null,
           player1_partner_id: match.team1[1] || null,
