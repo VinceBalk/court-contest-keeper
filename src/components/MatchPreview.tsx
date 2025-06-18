@@ -22,8 +22,9 @@ const MatchPreview = ({
   onCancel, 
   currentRound 
 }: MatchPreviewProps) => {
-  const topGroupMatches = previewMatches.filter(m => (m.group || 'top') === 'top');
-  const bottomGroupMatches = previewMatches.filter(m => (m.group || 'bottom') === 'bottom');
+  // Fixed: Properly filter matches by group
+  const topGroupMatches = previewMatches.filter(m => m.group === 'top');
+  const bottomGroupMatches = previewMatches.filter(m => m.group === 'bottom');
 
   const renderMatchCard = (match: Match, group: 'top' | 'bottom') => {
     const team1Players = match.team1.map(id => players.find(p => p.id === id)?.name).join(" & ");

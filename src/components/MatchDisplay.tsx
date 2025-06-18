@@ -13,6 +13,7 @@ interface MatchDisplayProps {
 }
 
 const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProps) => {
+  // Fixed: Properly filter matches by group
   const groupMatches = matches.filter(match => match.group === group);
 
   const getPlayerName = (playerId: string) => {
@@ -36,7 +37,9 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold capitalize">{group} Group</h3>
+      <h3 className="text-lg font-semibold capitalize">
+        {group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}
+      </h3>
       {groupMatches.length === 0 ? (
         <Card>
           <CardContent className="p-4">

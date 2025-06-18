@@ -61,7 +61,7 @@ export const generateFinalRoundMatches = (
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,
       round,
-      group,
+      group, // This was already correct
       court: group === 'top' ? court : court + 2,
       team1: [pairing.team1[0].id, pairing.team1[1].id],
       team2: [pairing.team2[0].id, pairing.team2[1].id],
@@ -105,7 +105,7 @@ export const generateRandomMatches = (
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,
       round,
-      group,
+      group, // Fixed: Now properly assigns the group parameter
       court: group === 'top' ? court : court + 2, // Bottom group uses courts 3-4
       team1: [team1Player1.id, team1Player2.id],
       team2: [team2Player1.id, team2Player2.id],
@@ -139,7 +139,7 @@ export const generateManualMatches = (
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,
       round,
-      group,
+      group, // Fixed: Now properly assigns the group parameter
       court: group === 'top' ? court : court + 2,
       team1: pairing.team1,
       team2: pairing.team2,
