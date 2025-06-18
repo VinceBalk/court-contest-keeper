@@ -1,7 +1,6 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Player, Match } from "@/pages/Index";
 
@@ -48,7 +47,11 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
         </Card>
       ) : (
         groupMatches.map((match) => (
-          <Card key={match.id} className="cursor-pointer hover:bg-muted/50" onClick={() => onEditMatch?.(match)}>
+          <Card 
+            key={match.id} 
+            className="cursor-pointer hover:bg-muted/50 transition-colors" 
+            onClick={() => onEditMatch?.(match)}
+          >
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm">Court {match.court}</CardTitle>
@@ -80,19 +83,6 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
                   </span>
                 </div>
               </div>
-              {onEditMatch && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full mt-3"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEditMatch(match);
-                  }}
-                >
-                  Edit Match
-                </Button>
-              )}
             </CardContent>
           </Card>
         ))
