@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/dialog";
 
 interface TournamentFormProps {
-  tournaments: Tournament[];
-  setTournaments: (tournaments: Tournament[]) => void;
+  tournaments: (Tournament & { isActive?: boolean; completed?: boolean; })[];
+  setTournaments: (tournaments: (Tournament & { isActive?: boolean; completed?: boolean; })[]) => void;
 }
 
 const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) => {
@@ -74,15 +74,15 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
   };
 
   const confirmCreateTournament = () => {
-    const newTournament: Tournament = {
+    const newTournament = {
       id: `tournament-${Date.now()}`,
       name: newTournamentName.trim(),
-      startDate: newTournamentStartDate,
-      endDate: newTournamentEndDate || newTournamentStartDate,
+      start_date: newTournamentStartDate,
+      end_date: newTournamentEndDate || newTournamentStartDate,
+      max_players: newTournamentMaxPlayers,
       isActive: false,
-      completed: false,
-      maxPlayers: newTournamentMaxPlayers
-    };
+      completed: false
+    } as Tournament & { isActive: boolean; completed: boolean; };
 
     setTournaments([...tournaments, newTournament]);
     setNewTournamentName("");
@@ -93,7 +93,7 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
     
     toast({
       title: "Tournament Created",
-      description: `${newTournament.name} has been created with ${newTournament.maxPlayers} players max`,
+      description: `${newTournament.name} has been created with ${newTournament.max_players} players max`,
     });
   };
 

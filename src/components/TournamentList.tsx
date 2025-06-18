@@ -7,10 +7,10 @@ import { useT } from "@/contexts/TranslationContext";
 import TournamentCard from "./TournamentCard";
 
 interface TournamentListProps {
-  tournaments: Tournament[];
-  setTournaments: (tournaments: Tournament[]) => void;
-  activeTournament: Tournament | null;
-  setActiveTournament: (tournament: Tournament | null) => void;
+  tournaments: (Tournament & { isActive?: boolean; completed?: boolean; })[];
+  setTournaments: (tournaments: (Tournament & { isActive?: boolean; completed?: boolean; })[]) => void;
+  activeTournament: (Tournament & { isActive?: boolean; completed?: boolean; }) | null;
+  setActiveTournament: (tournament: (Tournament & { isActive?: boolean; completed?: boolean; }) | null) => void;
   setCurrentRound: (round: number) => void;
   players: Player[];
   setPlayers: (players: Player[]) => void;

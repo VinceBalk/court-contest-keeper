@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,7 +72,7 @@ const RoundView = ({
       
       if (team1Players.includes(player.id)) {
         const scoreDiff = team1Score - oldTeam1Score;
-        const oldPlayerSpecials = typeof oldSpecialPoints[player.id] === 'number' ? oldSpecialPoints[player.id] : 0;
+        const oldPlayerSpecials = (typeof oldSpecialPoints[player.id] === 'number') ? oldSpecialPoints[player.id] as number : 0;
         const newPlayerSpecials = convertedSpecialPoints[player.id] || 0;
         const specialsDiff = newPlayerSpecials - oldPlayerSpecials;
         
@@ -86,7 +85,7 @@ const RoundView = ({
         };
       } else if (team2Players.includes(player.id)) {
         const scoreDiff = team2Score - oldTeam2Score;
-        const oldPlayerSpecials = typeof oldSpecialPoints[player.id] === 'number' ? oldSpecialPoints[player.id] : 0;
+        const oldPlayerSpecials = (typeof oldSpecialPoints[player.id] === 'number') ? oldSpecialPoints[player.id] as number : 0;
         const newPlayerSpecials = convertedSpecialPoints[player.id] || 0;
         const specialsDiff = newPlayerSpecials - oldPlayerSpecials;
         
@@ -115,11 +114,13 @@ const RoundView = ({
     const team2Players = match.team2.map(id => players.find(p => p.id === id)?.name).join(" & ");
     
     // Calculate total special points for display
-    const getSpecialCount = (specialPoints: { [playerId: string]: number }): number => {
+    const getSpecialCount = (specialPoints: { [playerId: string]: number | { [specialType: string]: number } } | undefined): number => {
       if (!specialPoints || typeof specialPoints !== 'object') return 0;
-      return Object.values(specialPoints).reduce((total: number, playerSpecials: unknown) => {
+      return Object.values(specialPoints).reduce((total, playerSpecials) => {
         if (typeof playerSpecials === 'number') {
           return total + playerSpecials;
+        } else if (typeof playerSpecials === 'object' && playerSpecials) {
+          return total + Object.values(playerSpecials).reduce((sum, count) => sum + (typeof count === 'number' ? count : 0), 0);
         }
         return total;
       }, 0);

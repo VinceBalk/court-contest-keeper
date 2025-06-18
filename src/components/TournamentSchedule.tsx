@@ -158,7 +158,7 @@ const TournamentSchedule = ({
       
       if (team1Players.includes(player.id)) {
         const scoreDiff = team1Score - oldTeam1Score;
-        const oldPlayerSpecials = typeof oldSpecialPoints[player.id] === 'number' ? oldSpecialPoints[player.id] : 0;
+        const oldPlayerSpecials = (typeof oldSpecialPoints[player.id] === 'number') ? oldSpecialPoints[player.id] as number : 0;
         const newPlayerSpecials = convertedSpecialPoints[player.id] || 0;
         const specialsDiff = newPlayerSpecials - oldPlayerSpecials;
         
@@ -171,7 +171,7 @@ const TournamentSchedule = ({
         };
       } else if (team2Players.includes(player.id)) {
         const scoreDiff = team2Score - oldTeam2Score;
-        const oldPlayerSpecials = typeof oldSpecialPoints[player.id] === 'number' ? oldSpecialPoints[player.id] : 0;
+        const oldPlayerSpecials = (typeof oldSpecialPoints[player.id] === 'number') ? oldSpecialPoints[player.id] as number : 0;
         const newPlayerSpecials = convertedSpecialPoints[player.id] || 0;
         const specialsDiff = newPlayerSpecials - oldPlayerSpecials;
         
