@@ -10,6 +10,8 @@ import { generateFinalRoundMatches, generateRandomMatches, generateManualMatches
 import ScoreEntry from "./ScoreEntry";
 import MatchDisplay from "./MatchDisplay";
 import ManualPairingSetup from "./ManualPairingSetup";
+import MatchPreview from "./MatchPreview";
+import RankingScoring from "./RankingScoring";
 
 interface TournamentScheduleProps {
   players: Player[];
@@ -34,11 +36,70 @@ const TournamentSchedule = ({
 }: TournamentScheduleProps) => {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [isManualMode, setIsManualMode] = useState(false);
+  const [previewMatches, setPreviewMatches] = useState<Match[] | null>(null);
   const [manualPairings, setManualPairings] = useState<{
     top: { team1: [string, string], team2: [string, string] }[];
     bottom: { team1: [string, string], team2: [string, string] }[];
   }>({ top: [], bottom: [] });
   const { toast } = useToast();
+
+  const generateMatchPreview = () => {
+    if (!activeTournament) {
+      toast({
+        title: "Error",
+        description: "No active tournament selected",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      let topMatches: Match[] = [];
+      let bottomMatches: Match[] = [];
+
+      if (currentRound === 3) {
+        topMatches = generateFinalRoundMatches('top', currentRound, activePlayers, activeTournament);
+        bottomMatches = generateFinalRoundMatches('bottom', currentRound, activePlayers, activeTournament);
+      } else if (isManualMode) {
+        topMatches = generateManualMatches('top', currentRound, manualPairings.top, activeTournament);
+        bottomMatches = generateManualMatches('bottom', currentRound, manualPairings.bottom, activeTournament);
+      } else {
+        topMatches = generateRandomMatches('top', currentRound, activePlayers, activeTournament);
+        bottomMatches = generateRandomMatches('bottom', currentRound, activePlayers, activeTournament);
+      }
+      
+      const allNewMatches = [...topMatches, ...bottomMatches];
+      setPreviewMatches(allNewMatches);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate match preview",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const confirmMatches = () => {
+    if (!previewMatches) return;
+    
+    const existingMatches = matches.filter(m => m.round !== currentRound);
+    setMatches([...existingMatches, ...previewMatches]);
+    setPreviewMatches(null);
+    
+    const matchType = currentRound === 3 ? 'Final Round' : (isManualMode ? 'Manual' : 'Random');
+    toast({
+      title: `${matchType} Matches Confirmed`,
+      description: `Round ${currentRound} matches have been created`,
+    });
+  };
+
+  const regenerateMatches = () => {
+    generateMatchPreview();
+  };
+
+  const cancelPreview = () => {
+    setPreviewMatches(null);
+  };
 
   const generateRoundMatches = () => {
     if (!activeTournament) {
@@ -216,11 +277,11 @@ const TournamentSchedule = ({
           )}
         </h2>
         <div className="flex gap-2">
-          {canGenerateMatches && currentRoundMatches.length === 0 && (
+          {canGenerateMatches && currentRoundMatches.length === 0 && !previewMatches && (
             <>
-              <Button onClick={generateRoundMatches} className="bg-green-600 hover:bg-green-700">
+              <Button onClick={generateMatchPreview} className="bg-green-600 hover:bg-green-700">
                 <Shuffle className="h-4 w-4 mr-2" />
-                {currentRound === 3 ? 'Generate Final Round' : (isManualMode ? 'Generate Manual' : 'Generate Random')}
+                {currentRound === 3 ? 'Preview Final Round' : (isManualMode ? 'Preview Manual' : 'Preview Random')}
               </Button>
               {currentRound !== 3 && (
                 <Button 
@@ -233,7 +294,7 @@ const TournamentSchedule = ({
               )}
             </>
           )}
-          {currentRound < 3 && (
+          {currentRound < 3 && !previewMatches && (
             <Button 
               onClick={() => setCurrentRound(currentRound + 1)}
               variant="outline"
@@ -244,7 +305,7 @@ const TournamentSchedule = ({
         </div>
       </div>
 
-      {currentRound === 3 && currentRoundMatches.length === 0 && (
+      {currentRound === 3 && currentRoundMatches.length === 0 && !previewMatches && (
         <Card className="bg-yellow-50 border-yellow-200">
           <CardContent className="pt-6">
             <p className="text-yellow-800 text-center">
@@ -270,7 +331,7 @@ const TournamentSchedule = ({
         </Card>
       )}
 
-      {isManualMode && currentRound !== 3 && currentRoundMatches.length === 0 && (
+      {isManualMode && currentRound !== 3 && currentRoundMatches.length === 0 && !previewMatches && (
         <ManualPairingSetup 
           manualPairings={manualPairings}
           players={players}
@@ -278,7 +339,18 @@ const TournamentSchedule = ({
         />
       )}
 
-      {currentRoundMatches.length > 0 && (
+      {previewMatches && (
+        <MatchPreview
+          previewMatches={previewMatches}
+          players={players}
+          onConfirm={confirmMatches}
+          onRegenerate={regenerateMatches}
+          onCancel={cancelPreview}
+          currentRound={currentRound}
+        />
+      )}
+
+      {currentRoundMatches.length > 0 && !previewMatches && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <MatchDisplay 
             group="top"
@@ -293,6 +365,15 @@ const TournamentSchedule = ({
             onSelectMatch={setSelectedMatch}
           />
         </div>
+      )}
+
+      {currentRound >= 3 && currentRoundMatches.length > 0 && (
+        <RankingScoring
+          players={players}
+          setPlayers={setPlayers}
+          activeTournament={activeTournament}
+          currentRound={currentRound}
+        />
       )}
 
       {selectedMatch && (
