@@ -12,7 +12,7 @@ interface MatchDisplayProps {
 }
 
 const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProps) => {
-  // Fixed: Properly filter matches by group
+  // Filter matches by group
   const groupMatches = matches.filter(match => match.group === group);
 
   const getPlayerName = (playerId: string) => {
@@ -37,7 +37,7 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold capitalize">
-        {group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}
+        {group === 'top' ? 'Linker Rijtje (Courts 1-2)' : 'Rechter Rijtje (Courts 3-4)'}
       </h3>
       {groupMatches.length === 0 ? (
         <Card>
@@ -54,7 +54,9 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
           >
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-sm">Court {match.court}</CardTitle>
+                <CardTitle className="text-sm">
+                  Court {match.court} - {group === 'top' ? 'Linker' : 'Rechter'} Rijtje
+                </CardTitle>
                 {match.completed && (
                   <Badge variant="secondary">Completed</Badge>
                 )}

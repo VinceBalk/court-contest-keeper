@@ -19,13 +19,14 @@ interface ManualPairingSetupProps {
 
 const ManualPairingSetup = ({ manualPairings, players, onUpdatePairing }: ManualPairingSetupProps) => {
   const getMatchInfo = (group: 'top' | 'bottom', matchIndex: number, currentRound: number = 1) => {
-    const court = Math.floor(matchIndex / 3) + 1;
-    // Fixed: Top group uses courts 1-2, bottom group uses courts 3-4
-    const courtAdjusted = group === 'top' ? court : court + 2;
+    // First 3 matches on court 1, next 3 on court 2
+    const baseCourt = Math.floor(matchIndex / 3) + 1; // 1 or 2
+    // For top group: courts 1-2, for bottom group: courts 3-4
+    const court = group === 'top' ? baseCourt : baseCourt + 2;
     const matchNumber = (matchIndex % 3) + 1 + ((currentRound - 1) * 3);
     
     return {
-      court: courtAdjusted,
+      court: court,
       matchNumber: matchNumber
     };
   };

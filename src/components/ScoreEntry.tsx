@@ -99,20 +99,33 @@ const ScoreEntry = ({
   };
 
   const addSpecialPoint = (playerId: string, specialType: string) => {
-    setSpecialPoints(prev => ({
-      ...prev,
-      [playerId]: {
-        ...prev[playerId],
-        [specialType]: (prev[playerId]?.[specialType] || 0) + 1
-      }
-    }));
+    setSpecialPoints(prev => {
+      const currentCount = prev[playerId]?.[specialType] || 0;
+      // Check if this is a "love game lost" type which should be negative
+      const isNegativeSpecial = specialType.toLowerCase().includes('love') && specialType.toLowerCase().includes('lost');
+      const increment = isNegativeSpecial ? -1 : 1;
+      
+      return {
+        ...prev,
+        [playerId]: {
+          ...prev[playerId],
+          [specialType]: currentCount + increment
+        }
+      };
+    });
   };
 
   const removeSpecialPoint = (playerId: string, specialType: string) => {
     setSpecialPoints(prev => {
       const playerSpecials = { ...prev[playerId] };
-      if (playerSpecials[specialType] > 1) {
-        playerSpecials[specialType] = playerSpecials[specialType] - 1;
+      const currentCount = playerSpecials[specialType] || 0;
+      
+      // Check if this is a "love game lost" type which should be negative
+      const isNegativeSpecial = specialType.toLowerCase().includes('love') && specialType.toLowerCase().includes('lost');
+      const decrement = isNegativeSpecial ? -1 : 1;
+      
+      if (Math.abs(currentCount) > 1) {
+        playerSpecials[specialType] = currentCount - decrement;
       } else {
         delete playerSpecials[specialType];
       }
