@@ -112,22 +112,29 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex gap-4">
+            {/* Tournament Name - Full width on all screens */}
+            <div className="w-full">
+              <label className="block text-sm font-medium mb-2 sm:hidden">Tournament Name</label>
               <Input
                 placeholder={t('tournament.name.placeholder')}
                 value={newTournamentName}
                 onChange={(e) => setNewTournamentName(e.target.value)}
-                className="flex-1"
+                className="w-full"
               />
+            </div>
+
+            {/* Date and Player Fields - Responsive grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t('tournament.startDate')}</label>
                 <Input
                   type="date"
                   value={newTournamentStartDate}
                   onChange={(e) => handleStartDateChange(e.target.value)}
-                  className="w-40"
+                  className="w-full"
                 />
               </div>
+              
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t('tournament.endDate')}</label>
                 <Input
@@ -135,27 +142,42 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
                   value={newTournamentEndDate}
                   onChange={(e) => setNewTournamentEndDate(e.target.value)}
                   min={newTournamentStartDate}
-                  className="w-40"
+                  className="w-full"
                 />
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-gray-600" />
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-600" />
+                  Max Players
+                </label>
                 <Input
                   type="number"
                   min="8"
                   step="4"
                   value={newTournamentMaxPlayers}
                   onChange={(e) => setNewTournamentMaxPlayers(Number(e.target.value))}
-                  className="w-24"
+                  className="w-full"
                   placeholder={t('tournament.maxPlayers.label')}
                 />
               </div>
-              <Button onClick={handleCreateTournamentClick} className="bg-green-600 hover:bg-green-700">
-                <Plus className="h-4 w-4 mr-2" />
-                {t('general.create')}
-              </Button>
+
+              {/* Create Button - Takes full width on mobile, auto on larger screens */}
+              <div className="flex flex-col gap-2 sm:col-span-2 lg:col-span-1">
+                <label className="text-sm font-medium opacity-0 select-none">Action</label>
+                <Button 
+                  onClick={handleCreateTournamentClick} 
+                  className="bg-green-600 hover:bg-green-700 w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  <span className="sm:hidden">Create</span>
+                  <span className="hidden sm:inline">{t('general.create')}</span>
+                </Button>
+              </div>
             </div>
-            <p className="text-sm text-gray-600">
+
+            {/* Help text - responsive */}
+            <p className="text-xs sm:text-sm text-gray-600 mt-2">
               Maximum players must be a multiple of 4 (minimum 8). Default is 16 players (8 per group).
             </p>
           </div>
