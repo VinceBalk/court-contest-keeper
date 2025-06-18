@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft } from "lucide-react";
-import { Player, Match, Tournament } from "@/pages/Index";
+import { Player, Match, Tournament, SpecialType } from "@/pages/Index";
 import ScoreEntry from "@/components/ScoreEntry";
 
 interface RoundViewProps {
@@ -15,6 +15,7 @@ interface RoundViewProps {
   setMatches: (matches: Match[]) => void;
   currentRound: number;
   activeTournament: Tournament | null;
+  specialTypes?: SpecialType[];
 }
 
 const RoundView = ({ 
@@ -23,7 +24,8 @@ const RoundView = ({
   tournaments, 
   setMatches, 
   currentRound,
-  activeTournament 
+  activeTournament,
+  specialTypes = []
 }: RoundViewProps) => {
   const { round } = useParams();
   const navigate = useNavigate();
@@ -132,6 +134,7 @@ const RoundView = ({
         <ScoreEntry
           match={selectedMatch}
           players={players}
+          specialTypes={specialTypes}
           onClose={() => setSelectedMatch(null)}
           onSave={handleScoreUpdate}
         />

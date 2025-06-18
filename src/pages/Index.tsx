@@ -3,10 +3,7 @@ import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import MainHeader from "@/components/MainHeader";
 import MainTabs from "@/components/MainTabs";
-import { useTournaments } from "@/hooks/useTournaments";
-import { usePlayers } from "@/hooks/usePlayers";
-import { useMatches } from "@/hooks/useMatches";
-import { useSpecials } from "@/hooks/useSpecials";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 export interface Player {
   id: string;
@@ -56,71 +53,67 @@ export interface Match {
   winnerId?: string;
 }
 
+export interface SpecialType {
+  id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+}
+
 const Index = () => {
   // State for active tab
   const [activeTab, setActiveTab] = useState("tournaments");
   const [currentRound, setCurrentRound] = useState(1);
 
-  // Use React Query hooks to fetch data from Supabase
-  const { data: tournaments = [], isLoading: tournamentsLoading } = useTournaments();
-  const { data: players = [], isLoading: playersLoading } = usePlayers();
-  const { data: specials = [], isLoading: specialsLoading } = useSpecials();
-  
+  // Use local storage for persistence
+  const [tournaments, setTournaments] = useLocalStorage<Tournament[]>('tournaments', []);
+  const [players, setPlayers] = useLocalStorage<Player[]>('players', []);
+  const [matches, setMatches] = useLocalStorage<Match[]>('matches', []);
+  const [specialTypes, setSpecialTypes] = useLocalStorage<SpecialType[]>('specialTypes', [
+    {
+      id: '1',
+      name: 'Golden Point',
+      description: 'Extra point for special shots',
+      isActive: true
+    },
+    {
+      id: '2',
+      name: 'Ace',
+      description: 'Point for aces',
+      isActive: true
+    }
+  ]);
+
   // Get active tournament
   const activeTournament = tournaments.find(t => t.status === 'active') || null;
-  const { data: matches = [] } = useMatches(activeTournament?.id);
-
-  // Local state for temporary tournament data (will be persisted via mutations)
-  const [localPlayers, setLocalPlayers] = useState<Player[]>([]);
-  const [localMatches, setLocalMatches] = useState<Match[]>([]);
-  const [localTournaments, setLocalTournaments] = useState<Tournament[]>([]);
-  const [localActiveTournament, setLocalActiveTournament] = useState<Tournament | null>(null);
-  const [localSpecialTypes, setLocalSpecialTypes] = useState(specials);
-
-  // Merge database players with local tournament-specific data
-  const mergedPlayers = players.map(dbPlayer => {
-    const localPlayer = localPlayers.find(p => p.id === dbPlayer.id);
-    return localPlayer || dbPlayer;
-  });
-
-  // Merge database matches with local tournament-specific data
-  const mergedMatches = matches.length > 0 ? matches : localMatches;
-
-  // Use database tournaments or local ones
-  const mergedTournaments = tournaments.length > 0 ? tournaments : localTournaments;
-  const finalActiveTournament = activeTournament || localActiveTournament;
-
-  if (tournamentsLoading || playersLoading || specialsLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading tournament data...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
       <div className="container mx-auto px-4 py-6 lg:py-8">
-        <MainHeader activeTournament={finalActiveTournament} />
+        <MainHeader activeTournament={activeTournament} />
         
         <MainTabs 
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          players={mergedPlayers}
-          setPlayers={setLocalPlayers}
-          tournaments={mergedTournaments}
-          setTournaments={setLocalTournaments}
-          matches={mergedMatches}
-          setMatches={setLocalMatches}
-          activeTournament={finalActiveTournament}
-          setActiveTournament={setLocalActiveTournament}
+          players={players}
+          setPlayers={setPlayers}
+          tournaments={tournaments}
+          setTournaments={setTournaments}
+          matches={matches}
+          setMatches={setMatches}
+          activeTournament={activeTournament}
+          setActiveTournament={(tournament) => {
+            const updatedTournaments = tournaments.map(t => ({
+              ...t,
+              status: t.id === tournament?.id ? 'active' as const : 
+                     t.status === 'active' ? 'draft' as const : t.status
+            }));
+            setTournaments(updatedTournaments);
+          }}
           setCurrentRound={setCurrentRound}
           currentRound={currentRound}
-          specialTypes={localSpecialTypes}
-          setSpecialTypes={setLocalSpecialTypes}
+          specialTypes={specialTypes}
+          setSpecialTypes={setSpecialTypes}
         />
       </div>
       <Toaster />

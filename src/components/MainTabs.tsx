@@ -1,9 +1,9 @@
+
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { useRole } from "@/contexts/RoleContext";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
-import { Player, Tournament, Match } from "@/pages/Index";
-import { SpecialType } from "@/components/SpecialManagement";
+import { Player, Tournament, Match, SpecialType } from "@/pages/Index";
 import { useTabConfiguration } from "./tabs/useTabConfiguration";
 import DesktopNavigation from "./tabs/DesktopNavigation";
 import MobileNavigation from "./tabs/MobileNavigation";
