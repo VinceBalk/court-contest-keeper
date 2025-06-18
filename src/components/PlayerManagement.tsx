@@ -10,6 +10,7 @@ import { Player, Match } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/contexts/TranslationContext";
 import PlayerDetailView from "./PlayerDetailView";
+import { useCreatePlayer, useDeletePlayer } from "@/hooks/usePlayers";
 
 interface PlayerManagementProps {
   players: Player[];
@@ -27,7 +28,10 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const { toast } = useToast();
 
-  const handleAddPlayer = () => {
+  const createPlayerMutation = useCreatePlayer();
+  const deletePlayerMutation = useDeletePlayer();
+
+  const handleAddPlayer = async () => {
     if (!newPlayerName.trim()) {
       toast({
         title: t('general.error'),
@@ -37,8 +41,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
       return;
     }
 
-    const newPlayer: Player = {
-      id: `player-${Date.now()}`,
+    const newPlayerData = {
       name: newPlayerName.trim(),
       email: newPlayerEmail.trim(),
       phone: newPlayerPhone.trim(),
@@ -49,43 +52,60 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
       totalPoints: 0,
       matchesPlayed: 0,
       isActive: true,
-      overallStats: {
-        totalGames: 0,
-        totalSpecials: 0,
-        totalPoints: 0,
-        matchesPlayed: 0,
-        tournamentsPlayed: 0,
-      }
     };
 
-    setPlayers([...players, newPlayer]);
-    setNewPlayerName("");
-    setNewPlayerEmail("");
-    setNewPlayerPhone("");
-    setNewPlayerSkillLevel(5);
-    setNewPlayerGroup('top');
-    
-    toast({
-      title: t('player.added'),
-      description: `${newPlayer.name} has been added to the ${newPlayer.group} group`,
+    createPlayerMutation.mutate(newPlayerData, {
+      onSuccess: () => {
+        setNewPlayerName("");
+        setNewPlayerEmail("");
+        setNewPlayerPhone("");
+        setNewPlayerSkillLevel(5);
+        setNewPlayerGroup('top');
+        
+        toast({
+          title: t('player.added'),
+          description: `${newPlayerData.name} has been added to the ${newPlayerData.group} group`,
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: t('general.error'),
+          description: "Failed to add player",
+          variant: "destructive"
+        });
+        console.error('Error adding player:', error);
+      }
     });
   };
 
-  const handleDeletePlayer = (playerId: string) => {
+  const handleDeletePlayer = async (playerId: string) => {
     const playerToDelete = players.find(p => p.id === playerId);
     if (playerToDelete) {
-      setPlayers(players.filter(p => p.id !== playerId));
-      toast({
-        title: t('player.deleted'),
-        description: `${playerToDelete.name} has been removed`,
+      deletePlayerMutation.mutate(playerId, {
+        onSuccess: () => {
+          toast({
+            title: t('player.deleted'),
+            description: `${playerToDelete.name} has been removed`,
+          });
+        },
+        onError: (error) => {
+          toast({
+            title: t('general.error'),
+            description: "Failed to delete player",
+            variant: "destructive"
+          });
+          console.error('Error deleting player:', error);
+        }
       });
     }
   };
 
   const handleToggleActive = (playerId: string) => {
-    setPlayers(players.map(p => 
-      p.id === playerId ? { ...p, isActive: !p.isActive } : p
-    ));
+    // This will be handled by player update mutation in PlayerDetailView
+    const player = players.find(p => p.id === playerId);
+    if (player) {
+      setSelectedPlayer(player);
+    }
   };
 
   const activePlayers = players.filter(p => p.isActive);
@@ -159,10 +179,16 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
             </div>
 
             <div className="sm:col-span-2 lg:col-span-1">
-              <Button onClick={handleAddPlayer} className="w-full bg-blue-600 hover:bg-blue-700">
+              <Button 
+                onClick={handleAddPlayer} 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={createPlayerMutation.isLoading}
+              >
                 <UserPlus className="h-4 w-4 mr-2" />
                 <span className="sm:hidden">Add</span>
-                <span className="hidden sm:inline">{t('general.add')}</span>
+                <span className="hidden sm:inline">
+                  {createPlayerMutation.isLoading ? 'Adding...' : t('general.add')}
+                </span>
               </Button>
             </div>
           </div>
@@ -217,6 +243,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                       size="sm"
                       onClick={() => handleDeletePlayer(player.id)}
                       className="text-red-600 hover:text-red-700"
+                      disabled={deletePlayerMutation.isLoading}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -274,6 +301,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                       size="sm"
                       onClick={() => handleDeletePlayer(player.id)}
                       className="text-red-600 hover:text-red-700"
+                      disabled={deletePlayerMutation.isLoading}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -291,7 +319,8 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           players={players}
           matches={matches}
           onUpdatePlayer={(updatedPlayer) => {
-            setPlayers(players.map(p => p.id === updatedPlayer.id ? updatedPlayer : p));
+            // Player updates are handled through Supabase mutations in PlayerDetailView
+            console.log('Player updated:', updatedPlayer);
           }}
           onClose={() => setSelectedPlayer(null)}
         />

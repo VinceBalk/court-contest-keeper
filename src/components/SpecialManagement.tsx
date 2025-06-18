@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Target, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/contexts/TranslationContext";
+import { useCreateSpecial, useUpdateSpecial } from "@/hooks/useSpecials";
 
 export interface SpecialType {
   id: string;
@@ -28,8 +29,11 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
   const [editDescription, setEditDescription] = useState("");
   const { toast } = useToast();
   const { t } = useT();
+  
+  const createSpecialMutation = useCreateSpecial();
+  const updateSpecialMutation = useUpdateSpecial();
 
-  const createSpecial = () => {
+  const createSpecial = async () => {
     if (!newSpecialName.trim()) {
       toast({
         title: t('general.error'),
@@ -39,20 +43,30 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
       return;
     }
 
-    const newSpecial: SpecialType = {
-      id: `special-${Date.now()}`,
+    const newSpecial = {
       name: newSpecialName.trim(),
       description: newSpecialDescription.trim() || undefined,
       isActive: true
     };
 
-    setSpecialTypes([...specialTypes, newSpecial]);
-    setNewSpecialName("");
-    setNewSpecialDescription("");
-    
-    toast({
-      title: t('special.created'),
-      description: `${newSpecial.name} ${t('special.createdDescription')}`,
+    createSpecialMutation.mutate(newSpecial, {
+      onSuccess: () => {
+        setNewSpecialName("");
+        setNewSpecialDescription("");
+        
+        toast({
+          title: t('special.created'),
+          description: `${newSpecial.name} ${t('special.createdDescription')}`,
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: t('general.error'),
+          description: "Failed to create special",
+          variant: "destructive"
+        });
+        console.error('Error creating special:', error);
+      }
     });
   };
 
@@ -62,7 +76,7 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
     setEditDescription(special.description || "");
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editName.trim()) {
       toast({
         title: t('general.error'),
@@ -72,20 +86,34 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
       return;
     }
 
-    const updatedSpecials = specialTypes.map(special =>
-      special.id === editingId
-        ? { ...special, name: editName.trim(), description: editDescription.trim() || undefined }
-        : special
-    );
+    const special = specialTypes.find(s => s.id === editingId);
+    if (!special) return;
 
-    setSpecialTypes(updatedSpecials);
-    setEditingId(null);
-    setEditName("");
-    setEditDescription("");
-    
-    toast({
-      title: t('special.updated'),
-      description: t('special.updatedDescription'),
+    const updatedSpecial = {
+      ...special,
+      name: editName.trim(),
+      description: editDescription.trim() || undefined
+    };
+
+    updateSpecialMutation.mutate(updatedSpecial, {
+      onSuccess: () => {
+        setEditingId(null);
+        setEditName("");
+        setEditDescription("");
+        
+        toast({
+          title: t('special.updated'),
+          description: t('special.updatedDescription'),
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: t('general.error'),
+          description: "Failed to update special",
+          variant: "destructive"
+        });
+        console.error('Error updating special:', error);
+      }
     });
   };
 
@@ -95,20 +123,28 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
     setEditDescription("");
   };
 
-  const toggleSpecialStatus = (specialId: string) => {
-    const updatedSpecials = specialTypes.map(special =>
-      special.id === specialId ? { ...special, isActive: !special.isActive } : special
-    );
-    setSpecialTypes(updatedSpecials);
+  const toggleSpecialStatus = async (special: SpecialType) => {
+    const updatedSpecial = { ...special, isActive: !special.isActive };
+    
+    updateSpecialMutation.mutate(updatedSpecial, {
+      onError: (error) => {
+        toast({
+          title: t('general.error'),
+          description: "Failed to update special status",
+          variant: "destructive"
+        });
+        console.error('Error toggling special status:', error);
+      }
+    });
   };
 
-  const deleteSpecial = (specialId: string) => {
-    const special = specialTypes.find(s => s.id === specialId);
-    setSpecialTypes(specialTypes.filter(s => s.id !== specialId));
-    
+  const deleteSpecial = async (special: SpecialType) => {
+    // Note: We don't have a delete mutation in the Supabase hooks yet
+    // This would need to be implemented if delete functionality is required
     toast({
-      title: t('special.deleted'),
-      description: `${special?.name} ${t('special.deletedDescription')}`,
+      title: "Not implemented",
+      description: "Delete functionality not yet implemented with Supabase",
+      variant: "destructive"
     });
   };
 
@@ -135,9 +171,13 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                 onChange={(e) => setNewSpecialDescription(e.target.value)}
               />
             </div>
-            <Button onClick={createSpecial} className="bg-green-600 hover:bg-green-700">
+            <Button 
+              onClick={createSpecial} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={createSpecialMutation.isLoading}
+            >
               <Plus className="h-4 w-4 mr-2" />
-              {t('special.create')}
+              {createSpecialMutation.isLoading ? 'Creating...' : t('special.create')}
             </Button>
           </div>
         </CardContent>
@@ -183,8 +223,13 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
               <div className="flex gap-2 flex-wrap">
                 {editingId === special.id ? (
                   <>
-                    <Button size="sm" onClick={saveEdit} className="bg-green-600 hover:bg-green-700">
-                      {t('special.save')}
+                    <Button 
+                      size="sm" 
+                      onClick={saveEdit} 
+                      className="bg-green-600 hover:bg-green-700"
+                      disabled={updateSpecialMutation.isLoading}
+                    >
+                      {updateSpecialMutation.isLoading ? 'Saving...' : t('special.save')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={cancelEdit}>
                       {t('special.cancel')}
@@ -204,15 +249,16 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => toggleSpecialStatus(special.id)}
+                      onClick={() => toggleSpecialStatus(special)}
                       className={special.isActive ? "text-orange-600 hover:text-orange-700" : "text-green-600 hover:text-green-700"}
+                      disabled={updateSpecialMutation.isLoading}
                     >
                       {special.isActive ? t('special.deactivate') : t('special.activate')}
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => deleteSpecial(special.id)}
+                      onClick={() => deleteSpecial(special)}
                       className="text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4" />
