@@ -1,5 +1,8 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 import { useT } from "@/contexts/TranslationContext";
 import { Player, Tournament, Match } from "@/pages/Index";
 import { SpecialType } from "@/components/SpecialManagement";
@@ -49,42 +52,74 @@ const MainTabs = ({
 
   const activeTournamentMatches = matches.filter(m => m.tournamentId === activeTournament?.id);
 
+  const tabs = [
+    { value: "tournaments", label: t('nav.tournaments'), shortLabel: "Tours", color: "orange" },
+    { value: "players", label: t('nav.players'), shortLabel: "Players", color: "blue" },
+    { value: "users", label: "User", shortLabel: "User", color: "cyan" },
+    { value: "specials", label: t('nav.specials'), shortLabel: "Special", color: "purple" },
+    { value: "matches", label: t('nav.matches'), shortLabel: "Match", color: "green" },
+    { value: "rankings", label: t('nav.rankings'), shortLabel: "Rank", color: "yellow" },
+    { value: "translations", label: t('nav.translations'), shortLabel: "Lang", color: "pink" },
+    { value: "settings", label: t('nav.settings'), shortLabel: "Set", color: "gray" }
+  ];
+
+  const getActiveColor = (color: string) => {
+    return `data-[state=active]:bg-${color}-100`;
+  };
+
+  const TabButton = ({ tab }: { tab: typeof tabs[0] }) => (
+    <TabsTrigger 
+      value={tab.value} 
+      className={`${getActiveColor(tab.color)} text-xs sm:text-sm px-2 py-2`}
+    >
+      <span className="hidden sm:inline">{tab.label}</span>
+      <span className="sm:hidden">{tab.shortLabel}</span>
+    </TabsTrigger>
+  );
+
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 bg-white/80 backdrop-blur-sm gap-1 h-auto p-1">
-        <TabsTrigger value="tournaments" className="data-[state=active]:bg-orange-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden sm:inline">{t('nav.tournaments')}</span>
-          <span className="sm:hidden">Tours</span>
-        </TabsTrigger>
-        <TabsTrigger value="players" className="data-[state=active]:bg-blue-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden sm:inline">{t('nav.players')}</span>
-          <span className="sm:hidden">Players</span>
-        </TabsTrigger>
-        <TabsTrigger value="users" className="data-[state=active]:bg-cyan-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden sm:inline">Users</span>
-          <span className="sm:hidden">Users</span>
-        </TabsTrigger>
-        <TabsTrigger value="specials" className="data-[state=active]:bg-purple-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden sm:inline">{t('nav.specials')}</span>
-          <span className="sm:hidden">Special</span>
-        </TabsTrigger>
-        <TabsTrigger value="matches" className="data-[state=active]:bg-green-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden sm:inline">{t('nav.matches')}</span>
-          <span className="sm:hidden">Match</span>
-        </TabsTrigger>
-        <TabsTrigger value="rankings" className="data-[state=active]:bg-yellow-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden sm:inline">{t('nav.rankings')}</span>
-          <span className="sm:hidden">Rank</span>
-        </TabsTrigger>
-        <TabsTrigger value="translations" className="data-[state=active]:bg-pink-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden lg:inline">{t('nav.translations')}</span>
-          <span className="lg:hidden">Lang</span>
-        </TabsTrigger>
-        <TabsTrigger value="settings" className="data-[state=active]:bg-gray-100 text-xs sm:text-sm px-2 py-2">
-          <span className="hidden sm:inline">{t('nav.settings')}</span>
-          <span className="sm:hidden">Set</span>
-        </TabsTrigger>
-      </TabsList>
+      {/* Desktop Navigation */}
+      <div className="hidden sm:block">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 bg-white/80 backdrop-blur-sm gap-1 h-auto p-1">
+          {tabs.map((tab) => (
+            <TabButton key={tab.value} tab={tab} />
+          ))}
+        </TabsList>
+      </div>
+
+      {/* Mobile Navigation with Hamburger Menu */}
+      <div className="sm:hidden">
+        <div className="flex items-center gap-2 mb-4">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm">
+                <Menu className="h-4 w-4" />
+                <span className="ml-2">Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 bg-white">
+              <div className="flex flex-col space-y-2 mt-6">
+                {tabs.map((tab) => (
+                  <Button
+                    key={tab.value}
+                    variant={activeTab === tab.value ? "default" : "ghost"}
+                    className={`justify-start ${activeTab === tab.value ? `bg-${tab.color}-100 text-${tab.color}-700` : ''}`}
+                    onClick={() => setActiveTab(tab.value)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+          
+          {/* Current tab indicator */}
+          <div className="bg-white/80 backdrop-blur-sm px-3 py-2 rounded-md text-sm font-medium">
+            {tabs.find(tab => tab.value === activeTab)?.label}
+          </div>
+        </div>
+      </div>
 
       <TabsContent value="tournaments">
         <TournamentManagement 
