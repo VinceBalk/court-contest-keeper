@@ -1,40 +1,57 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Trash2, Crown, Target, Edit2, Check, X, Plus, Minus, ArrowUp, ArrowDown } from "lucide-react";
-import { Player } from "@/pages/Index";
+import { Label } from "@/components/ui/label";
+import { UserPlus, Trash2, Crown, Target, Edit2, Check, X, Plus, Minus, ArrowUp, ArrowDown, Eye } from "lucide-react";
+import { Player, Match } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
+import PlayerDetailView from "./PlayerDetailView";
 
 interface PlayerManagementProps {
   players: Player[];
   setPlayers: (players: Player[]) => void;
+  matches?: Match[];
 }
 
-const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
-  const [newPlayerName, setNewPlayerName] = useState("");
-  const [newPlayerGroup, setNewPlayerGroup] = useState<'top' | 'bottom'>('top');
+const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagementProps) => {
+  const [newPlayer, setNewPlayer] = useState({
+    firstName: "",
+    middleName: "",
+    surname: "",
+    group: 'top' as 'top' | 'bottom'
+  });
   const [editingPlayer, setEditingPlayer] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState("");
+  const [editingData, setEditingData] = useState({
+    firstName: "",
+    middleName: "",
+    surname: ""
+  });
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const { toast } = useToast();
 
   const addPlayer = () => {
-    if (!newPlayerName.trim()) {
+    if (!newPlayer.firstName.trim() || !newPlayer.surname.trim()) {
       toast({
         title: "Error",
-        description: "Please enter a player name",
+        description: "First name and surname are required",
         variant: "destructive"
       });
       return;
     }
 
-    const newPlayer: Player = {
+    const fullName = [
+      newPlayer.firstName.trim(),
+      newPlayer.middleName.trim(),
+      newPlayer.surname.trim()
+    ].filter(Boolean).join(' ');
+
+    const newPlayerData: Player = {
       id: `player-${Date.now()}`,
-      name: newPlayerName.trim(),
-      group: newPlayerGroup,
+      name: fullName,
+      group: newPlayer.group,
       totalGames: 0,
       totalSpecials: 0,
       totalPoints: 0,
@@ -49,12 +66,12 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
       }
     };
 
-    setPlayers([...players, newPlayer]);
-    setNewPlayerName("");
+    setPlayers([...players, newPlayerData]);
+    setNewPlayer({ firstName: "", middleName: "", surname: "", group: 'top' });
     
     toast({
       title: "Player Added",
-      description: `${newPlayer.name} has been added to the ${newPlayerGroup === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'} group`,
+      description: `${fullName} has been added to the ${newPlayer.group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'} group`,
     });
   };
 
@@ -139,29 +156,40 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
   };
 
   const startEditing = (playerId: string, currentName: string) => {
+    const nameParts = currentName.split(' ');
     setEditingPlayer(playerId);
-    setEditingName(currentName);
+    setEditingData({
+      firstName: nameParts[0] || '',
+      middleName: nameParts.slice(1, -1).join(' ') || '',
+      surname: nameParts.slice(-1)[0] || ''
+    });
   };
 
   const saveEdit = () => {
-    if (!editingName.trim()) {
+    if (!editingData.firstName.trim() || !editingData.surname.trim()) {
       toast({
         title: "Error",
-        description: "Player name cannot be empty",
+        description: "First name and surname are required",
         variant: "destructive"
       });
       return;
     }
 
+    const fullName = [
+      editingData.firstName.trim(),
+      editingData.middleName.trim(),
+      editingData.surname.trim()
+    ].filter(Boolean).join(' ');
+
     const updatedPlayers = players.map(player =>
       player.id === editingPlayer
-        ? { ...player, name: editingName.trim() }
+        ? { ...player, name: fullName }
         : player
     ).sort((a, b) => a.name.localeCompare(b.name));
 
     setPlayers(updatedPlayers);
     setEditingPlayer(null);
-    setEditingName("");
+    setEditingData({ firstName: "", middleName: "", surname: "" });
     
     toast({
       title: "Name Updated",
@@ -171,7 +199,16 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
 
   const cancelEdit = () => {
     setEditingPlayer(null);
-    setEditingName("");
+    setEditingData({ firstName: "", middleName: "", surname: "" });
+  };
+
+  const handlePlayerUpdate = (updatedPlayer: Player) => {
+    const updatedPlayers = players.map(p => 
+      p.id === updatedPlayer.id ? updatedPlayer : p
+    ).sort((a, b) => a.name.localeCompare(b.name));
+    
+    setPlayers(updatedPlayers);
+    setSelectedPlayer(null);
   };
 
   const removePlayer = (playerId: string) => {
@@ -209,20 +246,35 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           </div>
           <div className="flex-1">
             {editingPlayer === player.id ? (
-              <div className="flex items-center gap-2">
-                <Input
-                  value={editingName}
-                  onChange={(e) => setEditingName(e.target.value)}
-                  className="h-8"
-                  onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
-                  autoFocus
-                />
-                <Button size="sm" onClick={saveEdit} className="h-8 w-8 p-0">
-                  <Check className="h-4 w-4" />
-                </Button>
-                <Button size="sm" variant="outline" onClick={cancelEdit} className="h-8 w-8 p-0">
-                  <X className="h-4 w-4" />
-                </Button>
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <Input
+                    value={editingData.firstName}
+                    onChange={(e) => setEditingData(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="First name"
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    value={editingData.middleName}
+                    onChange={(e) => setEditingData(prev => ({ ...prev, middleName: e.target.value }))}
+                    placeholder="Middle (optional)"
+                    className="h-8 text-xs"
+                  />
+                  <Input
+                    value={editingData.surname}
+                    onChange={(e) => setEditingData(prev => ({ ...prev, surname: e.target.value }))}
+                    placeholder="Surname"
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={saveEdit} className="h-8 px-2 text-xs">
+                    <Check className="h-3 w-3" />
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={cancelEdit} className="h-8 px-2 text-xs">
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             ) : (
               <div>
@@ -250,6 +302,15 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedPlayer(player)}
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 w-8 p-0"
+            title="View player details"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
           <div className="flex flex-col gap-1">
             {groupType === 'bottom' && (
               <Button
@@ -318,23 +379,51 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            <Input
-              placeholder="Player name"
-              value={newPlayerName}
-              onChange={(e) => setNewPlayerName(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
-              className="flex-1"
-            />
-            <Select value={newPlayerGroup} onValueChange={(value: 'top' | 'bottom') => setNewPlayerGroup(value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="top">Linker Rijtje</SelectItem>
-                <SelectItem value="bottom">Rechter Rijtje</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Label htmlFor="firstName">First Name *</Label>
+                <Input
+                  id="firstName"
+                  placeholder="First name"
+                  value={newPlayer.firstName}
+                  onChange={(e) => setNewPlayer(prev => ({ ...prev, firstName: e.target.value }))}
+                  onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
+                />
+              </div>
+              <div>
+                <Label htmlFor="middleName">Middle Name</Label>
+                <Input
+                  id="middleName"
+                  placeholder="Middle name (optional)"
+                  value={newPlayer.middleName}
+                  onChange={(e) => setNewPlayer(prev => ({ ...prev, middleName: e.target.value }))}
+                  onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
+                />
+              </div>
+              <div>
+                <Label htmlFor="surname">Surname *</Label>
+                <Input
+                  id="surname"
+                  placeholder="Surname"
+                  value={newPlayer.surname}
+                  onChange={(e) => setNewPlayer(prev => ({ ...prev, surname: e.target.value }))}
+                  onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
+                />
+              </div>
+              <div>
+                <Label htmlFor="group">Group</Label>
+                <Select value={newPlayer.group} onValueChange={(value: 'top' | 'bottom') => setNewPlayer(prev => ({ ...prev, group: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="top">Linker Rijtje</SelectItem>
+                    <SelectItem value="bottom">Rechter Rijtje</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <Button onClick={addPlayer} className="bg-blue-600 hover:bg-blue-700">
               Add Player
             </Button>
@@ -377,6 +466,16 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           </CardContent>
         </Card>
       </div>
+
+      {selectedPlayer && (
+        <PlayerDetailView
+          player={selectedPlayer}
+          matches={matches}
+          players={players}
+          onUpdatePlayer={handlePlayerUpdate}
+          onClose={() => setSelectedPlayer(null)}
+        />
+      )}
     </div>
   );
 };

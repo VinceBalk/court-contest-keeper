@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -55,6 +54,7 @@ const Index = () => {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [currentRound, setCurrentRound] = useState(1);
+  const [activeTab, setActiveTab] = useState("tournaments");
   const [specialTypes, setSpecialTypes] = useState<SpecialType[]>([
     { id: 'ace', name: 'Ace', description: 'Unreturnable serve', isActive: true },
     { id: 'winner', name: 'Winner', description: 'Shot that wins the point', isActive: true },
@@ -67,6 +67,22 @@ const Index = () => {
   const activePlayers = players.filter(p => p.isActive);
   const topGroupPlayers = activePlayers.filter(p => p.group === 'top').sort((a, b) => a.name.localeCompare(b.name));
   const bottomGroupPlayers = activePlayers.filter(p => p.group === 'bottom').sort((a, b) => a.name.localeCompare(b.name));
+
+  const handleStatsCardClick = (cardType: string) => {
+    switch(cardType) {
+      case 'totalPlayers':
+        setActiveTab('players');
+        break;
+      case 'specialTypes':
+        setActiveTab('specials');
+        break;
+      case 'activePlayers':
+        setActiveTab('players');
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
@@ -85,7 +101,10 @@ const Index = () => {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card className="bg-white/80 backdrop-blur-sm border-blue-200">
+          <Card 
+            className="bg-white/80 backdrop-blur-sm border-blue-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => handleStatsCardClick('activePlayers')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Players</CardTitle>
               <Users className="h-4 w-4 text-blue-600" />
@@ -98,7 +117,10 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-green-200">
+          <Card 
+            className="bg-white/80 backdrop-blur-sm border-green-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => handleStatsCardClick('totalPlayers')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Players</CardTitle>
               <Calendar className="h-4 w-4 text-green-600" />
@@ -124,7 +146,10 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-sm border-orange-200">
+          <Card 
+            className="bg-white/80 backdrop-blur-sm border-orange-200 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => handleStatsCardClick('specialTypes')}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Special Types</CardTitle>
               <Star className="h-4 w-4 text-orange-600" />
@@ -138,7 +163,7 @@ const Index = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="tournaments" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="tournaments" className="data-[state=active]:bg-orange-100">
               Tournaments
@@ -173,6 +198,7 @@ const Index = () => {
             <PlayerManagement 
               players={players} 
               setPlayers={setPlayers}
+              matches={activeTournamentMatches}
             />
           </TabsContent>
 
