@@ -6,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, UserPlus, Search, Filter, MoreHorizontal } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Users, UserPlus, Search, Edit, Save, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useForm } from "react-hook-form";
 
 interface TestUser {
   id: string;
@@ -20,11 +23,21 @@ interface TestUser {
   tournamentsParticipated: number;
 }
 
+interface EditUserForm {
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
 const UserManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [editingUser, setEditingUser] = useState<TestUser | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
   const [testUsers, setTestUsers] = useState<TestUser[]>([
     {
       id: '1',
@@ -64,6 +77,15 @@ const UserManagement = () => {
     }
   ]);
 
+  const form = useForm<EditUserForm>({
+    defaultValues: {
+      name: '',
+      email: '',
+      role: 'Player',
+      status: 'Active'
+    }
+  });
+
   const filteredUsers = testUsers.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -85,6 +107,43 @@ const UserManagement = () => {
     toast({
       title: "User Created",
       description: `${newUser.name} has been added successfully`,
+    });
+  };
+
+  const handleEditUser = (user: TestUser) => {
+    setEditingUser(user);
+    form.reset({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveUser = (data: EditUserForm) => {
+    if (!editingUser) return;
+
+    const updatedUsers = testUsers.map(u => 
+      u.id === editingUser.id 
+        ? { 
+            ...u, 
+            name: data.name,
+            email: data.email,
+            role: data.role,
+            status: data.status,
+            lastActive: new Date().toISOString().split('T')[0]
+          }
+        : u
+    );
+    
+    setTestUsers(updatedUsers);
+    setIsEditDialogOpen(false);
+    setEditingUser(null);
+    
+    toast({
+      title: "User Updated",
+      description: `${data.name} has been updated successfully`,
     });
   };
 
@@ -209,19 +268,15 @@ const UserManagement = () => {
                       </Badge>
                       
                       <div className="flex items-center gap-1">
-                        <Select 
-                          value={testUser.role} 
-                          onValueChange={(value) => changeUserRole(testUser.id, value)}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditUser(testUser)}
+                          className="flex items-center gap-1"
                         >
-                          <SelectTrigger className="w-24 h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Admin">Admin</SelectItem>
-                            <SelectItem value="Moderator">Moderator</SelectItem>
-                            <SelectItem value="Player">Player</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <Edit className="h-3 w-3" />
+                          Edit
+                        </Button>
                         
                         <Button
                           variant="outline"
@@ -251,6 +306,108 @@ const UserManagement = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSaveUser)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter user name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter email address" type="email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Moderator">Moderator</SelectItem>
+                        <SelectItem value="Player">Player</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Status</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
+                        <SelectItem value="Pending">Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="flex justify-end gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  <Save className="h-4 w-4 mr-1" />
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
