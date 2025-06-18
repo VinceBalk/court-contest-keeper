@@ -17,7 +17,7 @@ interface PlayerManagementProps {
   matches?: Match[];
 }
 
-const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
+const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagementProps) => {
   const { t } = useT();
   const [newPlayerName, setNewPlayerName] = useState("");
   const [newPlayerEmail, setNewPlayerEmail] = useState("");
@@ -289,6 +289,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
         <PlayerDetailView
           player={selectedPlayer}
           players={players}
+          matches={matches}
           onUpdatePlayer={(updatedPlayer) => {
             setPlayers(players.map(p => p.id === updatedPlayer.id ? updatedPlayer : p));
           }}
