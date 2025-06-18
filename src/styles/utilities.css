@@ -1,0 +1,14 @@
+
+/* Utility classes for design system */
+
+@layer utilities {
+  .text-custom-primary { color: hsl(var(--color-primary-500)); }
+  .text-custom-success { color: hsl(var(--color-success-500)); }
+  .text-custom-warning { color: hsl(var(--color-warning-500)); }
+  .text-custom-error { color: hsl(var(--color-error-500)); }
+  
+  .bg-custom-primary { background-color: hsl(var(--color-primary-500)); }
+  .bg-custom-success { background-color: hsl(var(--color-success-500)); }
+  .bg-custom-warning { background-color: hsl(var(--color-warning-500)); }
+  .bg-custom-error { background-color: hsl(var(--color-error-500)); }
+}
