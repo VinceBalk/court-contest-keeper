@@ -1,10 +1,11 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { UserPlus, Users, Edit, Trash2, Mail, Phone, Trophy } from "lucide-react";
+import { UserPlus, Users, Edit, Trash2, Trophy } from "lucide-react";
 import { Player, Match } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/contexts/TranslationContext";
@@ -20,9 +21,6 @@ interface PlayerManagementProps {
 const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagementProps) => {
   const { t } = useT();
   const [newPlayerName, setNewPlayerName] = useState("");
-  const [newPlayerEmail, setNewPlayerEmail] = useState("");
-  const [newPlayerPhone, setNewPlayerPhone] = useState("");
-  const [newPlayerSkillLevel, setNewPlayerSkillLevel] = useState(5);
   const [newPlayerGroup, setNewPlayerGroup] = useState<'top' | 'bottom'>('top');
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const { toast } = useToast();
@@ -34,7 +32,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
     if (!newPlayerName.trim()) {
       toast({
         title: t('general.error'),
-        description: "Please enter a player name",
+        description: t('player.enterName'),
         variant: "destructive"
       });
       return;
@@ -42,9 +40,9 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
 
     const newPlayerData = {
       name: newPlayerName.trim(),
-      email: newPlayerEmail.trim(),
-      phone: newPlayerPhone.trim(),
-      skillLevel: newPlayerSkillLevel,
+      email: '',
+      phone: '',
+      skillLevel: 5, // Default value for database
       group: newPlayerGroup,
       totalGames: 0,
       totalSpecials: 0,
@@ -56,14 +54,11 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
     createPlayerMutation.mutate(newPlayerData, {
       onSuccess: () => {
         setNewPlayerName("");
-        setNewPlayerEmail("");
-        setNewPlayerPhone("");
-        setNewPlayerSkillLevel(5);
         setNewPlayerGroup('top');
         
         toast({
           title: t('player.added'),
-          description: `${newPlayerData.name} has been added to the ${newPlayerData.group} group`,
+          description: `${newPlayerData.name} ${t('player.addedToGroup')} ${newPlayerData.group === 'top' ? t('player.topGroup') : t('player.bottomGroup')} ${t('player.group.label')}`,
         });
       },
       onError: (error) => {
@@ -84,7 +79,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
         onSuccess: () => {
           toast({
             title: t('player.deleted'),
-            description: `${playerToDelete.name} has been removed`,
+            description: `${playerToDelete.name} ${t('player.removed')}`,
           });
         },
         onError: (error) => {
@@ -96,14 +91,6 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           console.error('Error deleting player:', error);
         }
       });
-    }
-  };
-
-  const handleToggleActive = (playerId: string) => {
-    // This will be handled by player update mutation in PlayerDetailView
-    const player = players.find(p => p.id === playerId);
-    if (player) {
-      setSelectedPlayer(player);
     }
   };
 
@@ -121,48 +108,14 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-            <div className="sm:col-span-2 lg:col-span-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-2">
               <Input
                 placeholder={t('player.name.placeholder')}
                 value={newPlayerName}
                 onChange={(e) => setNewPlayerName(e.target.value)}
                 className="w-full"
               />
-            </div>
-            
-            <div className="sm:col-span-2 lg:col-span-1">
-              <Input
-                placeholder="Email (optional)"
-                type="email"
-                value={newPlayerEmail}
-                onChange={(e) => setNewPlayerEmail(e.target.value)}
-                className="w-full"
-              />
-            </div>
-            
-            <div className="sm:col-span-2 lg:col-span-1">
-              <Input
-                placeholder="Phone (optional)"
-                value={newPlayerPhone}
-                onChange={(e) => setNewPlayerPhone(e.target.value)}
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <Select value={newPlayerSkillLevel.toString()} onValueChange={(value) => setNewPlayerSkillLevel(Number(value))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Skill" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[1,2,3,4,5,6,7,8,9,10].map(level => (
-                    <SelectItem key={level} value={level.toString()}>
-                      Level {level}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             <div>
@@ -171,23 +124,20 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="top">Top Group</SelectItem>
-                  <SelectItem value="bottom">Bottom Group</SelectItem>
+                  <SelectItem value="top">{t('player.topGroup')}</SelectItem>
+                  <SelectItem value="bottom">{t('player.bottomGroup')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="sm:col-span-2 lg:col-span-1">
+            <div>
               <Button 
                 onClick={handleAddPlayer} 
                 className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={createPlayerMutation.isPending}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                <span className="sm:hidden">Add</span>
-                <span className="hidden sm:inline">
-                  {createPlayerMutation.isPending ? 'Adding...' : t('general.add')}
-                </span>
+                {createPlayerMutation.isPending ? 'Adding...' : t('general.add')}
               </Button>
             </div>
           </div>
@@ -199,7 +149,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-700">
               <Trophy className="h-5 w-5" />
-              Linker Rijtje ({topGroupPlayers.length})
+              {t('player.topGroup')} ({topGroupPlayers.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -209,21 +159,6 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                   <div className="flex items-center gap-3">
                     <div>
                       <div className="font-medium">{player.name}</div>
-                      <div className="text-sm text-gray-600 flex items-center gap-3">
-                        <span>Level {player.skillLevel}</span>
-                        {player.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {player.email}
-                          </span>
-                        )}
-                        {player.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {player.phone}
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -257,7 +192,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
               <Users className="h-5 w-5" />
-              Rechter Rijtje ({bottomGroupPlayers.length})
+              {t('player.bottomGroup')} ({bottomGroupPlayers.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -267,21 +202,6 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                   <div className="flex items-center gap-3">
                     <div>
                       <div className="font-medium">{player.name}</div>
-                      <div className="text-sm text-gray-600 flex items-center gap-3">
-                        <span>Level {player.skillLevel}</span>
-                        {player.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {player.email}
-                          </span>
-                        )}
-                        {player.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {player.phone}
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -318,7 +238,6 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           players={players}
           matches={matches}
           onUpdatePlayer={(updatedPlayer) => {
-            // Player updates are handled through Supabase mutations in PlayerDetailView
             console.log('Player updated:', updatedPlayer);
           }}
           onClose={() => setSelectedPlayer(null)}
