@@ -29,10 +29,13 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
     // Initialize with existing special points if editing
     const initialSpecials: { [playerId: string]: { [specialType: string]: number } } = {};
     if (match.specialPoints) {
-      Object.entries(match.specialPoints).forEach(([playerId, count]) => {
-        if (typeof count === 'number' && count > 0) {
-          // For existing data, assume it's all "General" type
-          initialSpecials[playerId] = { "General": count };
+      Object.entries(match.specialPoints).forEach(([playerId, points]) => {
+        if (typeof points === 'number' && points > 0) {
+          // For legacy data, assume it's all "General" type
+          initialSpecials[playerId] = { "General": points };
+        } else if (typeof points === 'object' && points) {
+          // For new structured data
+          initialSpecials[playerId] = points as { [specialType: string]: number };
         }
       });
     }

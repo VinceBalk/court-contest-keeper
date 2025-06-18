@@ -25,16 +25,18 @@ const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) =
     );
   }
 
-  // Redirect to auth if not authenticated
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
+  // For now, allow access without authentication since the database is set up
+  // but authentication is disabled. In the future, uncomment these lines:
+  
+  // if (!user) {
+  //   return <Navigate to="/auth" replace />;
+  // }
 
-  // Check if user has required permission
-  if (requiredPermission && !permissions[requiredPermission]) {
-    return <Navigate to="/" replace />;
-  }
+  // if (requiredPermission && !permissions[requiredPermission]) {
+  //   return <Navigate to="/" replace />;
+  // }
 
+  // Temporary: Allow all access for development
   return <>{children}</>;
 };
 

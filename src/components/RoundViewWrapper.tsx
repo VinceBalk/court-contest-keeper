@@ -1,56 +1,77 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import RoundView from "@/pages/RoundView";
 import { Player, Match, Tournament } from "@/pages/Index";
-import { SpecialType } from "@/components/SpecialManagement";
+import { useTournaments } from "@/hooks/useTournaments";
+import { usePlayers } from "@/hooks/usePlayers";
+import { useMatches } from "@/hooks/useMatches";
+import { useSpecials } from "@/hooks/useSpecials";
 
 const RoundViewWrapper = () => {
-  // In a real app, you'd get this data from a context or state management solution
-  // For now, we'll use localStorage to maintain state between page navigations
-  const [players, setPlayers] = useState<Player[]>(() => {
-    const saved = localStorage.getItem('tournament-players');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { round } = useParams();
+  const currentRound = parseInt(round || '1');
   
-  const [matches, setMatches] = useState<Match[]>(() => {
-    const saved = localStorage.getItem('tournament-matches');
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Use React Query hooks to fetch data from Supabase
+  const { data: tournaments = [] } = useTournaments();
+  const { data: players = [] } = usePlayers();
+  const { data: specials = [] } = useSpecials();
   
-  const [activeTournament, setActiveTournament] = useState<Tournament | null>(() => {
-    const saved = localStorage.getItem('active-tournament');
-    return saved ? JSON.parse(saved) : null;
-  });
-  
-  const [specialTypes] = useState<SpecialType[]>(() => {
-    const saved = localStorage.getItem('special-types');
-    return saved ? JSON.parse(saved) : [
-      { id: 'ace', name: 'Ace', description: 'Unreturnable serve', isActive: true },
-      { id: 'winner', name: 'Winner', description: 'Shot that wins the point', isActive: true },
-      { id: 'smash', name: 'Smash', description: 'Overhead winning shot', isActive: true },
-      { id: 'via-glass', name: 'Via Glass', description: 'Shot off the glass walls', isActive: true },
-      { id: 'out-of-cage', name: 'Out of Cage', description: 'Shot that goes out of bounds', isActive: true },
-    ];
-  });
+  // Get active tournament
+  const activeTournament = tournaments.find(t => t.status === 'active') || null;
+  const { data: matches = [] } = useMatches(activeTournament?.id);
+
+  // Local state for temporary tournament data
+  const [localPlayers, setLocalPlayers] = useState<Player[]>([]);
+  const [localMatches, setLocalMatches] = useState<Match[]>([]);
+
+  // Initialize local state from localStorage for backwards compatibility
+  useEffect(() => {
+    if (players.length === 0) {
+      const savedPlayers = localStorage.getItem('tournament-players');
+      if (savedPlayers) {
+        setLocalPlayers(JSON.parse(savedPlayers));
+      }
+    }
+    
+    if (matches.length === 0) {
+      const savedMatches = localStorage.getItem('tournament-matches');
+      if (savedMatches) {
+        setLocalMatches(JSON.parse(savedMatches));
+      }
+    }
+  }, [players.length, matches.length]);
 
   const handleSetPlayers = (newPlayers: Player[]) => {
-    setPlayers(newPlayers);
+    setLocalPlayers(newPlayers);
+    // Keep localStorage for backwards compatibility during transition
     localStorage.setItem('tournament-players', JSON.stringify(newPlayers));
   };
 
   const handleSetMatches = (newMatches: Match[]) => {
-    setMatches(newMatches);
+    setLocalMatches(newMatches);
+    // Keep localStorage for backwards compatibility during transition
     localStorage.setItem('tournament-matches', JSON.stringify(newMatches));
   };
 
+  // Use database data if available, fallback to local state
+  const finalPlayers = players.length > 0 ? players : localPlayers;
+  const finalMatches = matches.length > 0 ? matches : localMatches;
+  const finalSpecials = specials.length > 0 ? specials : [
+    { id: 'ace', name: 'Ace', description: 'Unreturnable serve', isActive: true },
+    { id: 'winner', name: 'Winner', description: 'Shot that wins the point', isActive: true },
+    { id: 'smash', name: 'Smash', description: 'Overhead winning shot', isActive: true },
+    { id: 'via-glass', name: 'Via Glass', description: 'Shot off the glass walls', isActive: true },
+    { id: 'out-of-cage', name: 'Out of Cage', description: 'Shot that goes out of bounds', isActive: true },
+  ];
+
   return (
     <RoundView
-      players={players}
-      matches={matches}
+      players={finalPlayers}
+      matches={finalMatches}
       setMatches={handleSetMatches}
       setPlayers={handleSetPlayers}
       activeTournament={activeTournament}
-      specialTypes={specialTypes}
+      specialTypes={finalSpecials}
     />
   );
 };

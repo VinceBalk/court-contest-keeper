@@ -1,24 +1,29 @@
 
 import { useState } from "react";
-import RoundNavigation from "@/components/RoundNavigation";
-import { SpecialType } from "@/components/SpecialManagement";
-import StatsCards from "@/components/StatsCards";
+import { Toaster } from "@/components/ui/toaster";
 import MainHeader from "@/components/MainHeader";
 import MainTabs from "@/components/MainTabs";
+import { useTournaments } from "@/hooks/useTournaments";
+import { usePlayers } from "@/hooks/usePlayers";
+import { useMatches } from "@/hooks/useMatches";
+import { useSpecials } from "@/hooks/useSpecials";
 
 export interface Player {
   id: string;
   name: string;
+  email: string;
+  phone: string;
+  skillLevel: number;
+  isActive: boolean;
   group: 'top' | 'bottom';
   totalGames: number;
   totalSpecials: number;
   totalPoints: number;
   matchesPlayed: number;
-  isActive: boolean; // Whether player is participating in current tournament
   overallStats: {
+    totalPoints: number;
     totalGames: number;
     totalSpecials: number;
-    totalPoints: number;
     matchesPlayed: number;
     tournamentsPlayed: number;
   };
@@ -27,136 +32,78 @@ export interface Player {
 export interface Tournament {
   id: string;
   name: string;
-  startDate: string;
-  endDate: string;
-  isActive: boolean;
-  completed: boolean;
-  maxPlayers: number; // Maximum number of players allowed (default 16)
+  description: string;
+  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  startDate?: string;
+  endDate?: string;
+  maxPlayers: number;
+  currentRound: number;
+  totalRounds: number;
 }
 
 export interface Match {
   id: string;
-  tournamentId: string;
-  round: number;
-  group: 'top' | 'bottom';
   court: number;
-  team1: [string, string]; // player IDs
-  team2: [string, string]; // player IDs
+  team1: string[];
+  team2: string[];
   team1Score: number;
   team2Score: number;
-  specialPoints: { [playerId: string]: number };
   completed: boolean;
+  round: number;
+  specialPoints?: { [playerId: string]: number | { [specialType: string]: number } };
+  winnerId?: string;
 }
 
 const Index = () => {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [activeTab, setActiveTab] = useState("tournaments");
-  const [specialTypes, setSpecialTypes] = useState<SpecialType[]>([
-    { id: 'ace', name: 'Ace', description: 'Unreturnable serve', isActive: true },
-    { id: 'winner', name: 'Winner', description: 'Shot that wins the point', isActive: true },
-    { id: 'smash', name: 'Smash', description: 'Overhead winning shot', isActive: true },
-    { id: 'via-glass', name: 'Via Glass', description: 'Shot off the glass walls', isActive: true },
-    { id: 'out-of-cage', name: 'Out of Cage', description: 'Shot that goes out of bounds', isActive: true },
-  ]);
+  // Use React Query hooks to fetch data from Supabase
+  const { data: tournaments = [], isLoading: tournamentsLoading } = useTournaments();
+  const { data: players = [], isLoading: playersLoading } = usePlayers();
+  const { data: specials = [], isLoading: specialsLoading } = useSpecials();
+  
+  // Get active tournament
+  const activeTournament = tournaments.find(t => t.status === 'active') || null;
+  const { data: matches = [] } = useMatches(activeTournament?.id);
 
-  const activeTournamentMatches = matches.filter(m => m.tournamentId === activeTournament?.id);
+  // Local state for temporary tournament data (will be persisted via mutations)
+  const [localPlayers, setLocalPlayers] = useState<Player[]>([]);
+  const [localMatches, setLocalMatches] = useState<Match[]>([]);
 
-  // Save tournaments to localStorage whenever they change
-  const handleSetTournaments = (newTournaments: Tournament[]) => {
-    setTournaments(newTournaments);
-    localStorage.setItem('tournaments', JSON.stringify(newTournaments));
-  };
+  // Merge database players with local tournament-specific data
+  const mergedPlayers = players.map(dbPlayer => {
+    const localPlayer = localPlayers.find(p => p.id === dbPlayer.id);
+    return localPlayer || dbPlayer;
+  });
 
-  // Save matches to localStorage whenever they change
-  const handleSetMatches = (newMatches: Match[]) => {
-    setMatches(newMatches);
-    localStorage.setItem('tournament-matches', JSON.stringify(newMatches));
-  };
+  // Merge database matches with local tournament-specific data
+  const mergedMatches = matches.length > 0 ? matches : localMatches;
 
-  // Save players to localStorage whenever they change
-  const handleSetPlayers = (newPlayers: Player[]) => {
-    setPlayers(newPlayers);
-    localStorage.setItem('tournament-players', JSON.stringify(newPlayers));
-  };
-
-  // Save special types to localStorage whenever they change
-  const handleSetSpecialTypes = (newSpecialTypes: SpecialType[]) => {
-    setSpecialTypes(newSpecialTypes);
-    localStorage.setItem('special-types', JSON.stringify(newSpecialTypes));
-  };
-
-  // Save active tournament to localStorage whenever it changes
-  const handleSetActiveTournament = (tournament: Tournament | null) => {
-    setActiveTournament(tournament);
-    localStorage.setItem('active-tournament', JSON.stringify(tournament));
-  };
-
-  const handleStatsCardClick = (cardType: string) => {
-    switch(cardType) {
-      case 'totalPlayers':
-        setActiveTab('players');
-        break;
-      case 'specials':
-        setActiveTab('specials');
-        break;
-      case 'activePlayers':
-        setActiveTab('players');
-        break;
-      case 'settings':
-        setActiveTab('settings');
-        break;
-      default:
-        break;
-    }
-  };
+  if (tournamentsLoading || playersLoading || specialsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading tournament data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-      <div className="w-full max-w-7xl mx-auto p-2 sm:p-4 lg:p-6">
+      <div className="container mx-auto px-4 py-6 lg:py-8">
         <MainHeader activeTournament={activeTournament} />
-
-        <StatsCards 
-          players={players}
-          activeTournament={activeTournament}
-          currentRound={currentRound}
-          specialTypes={specialTypes}
+        
+        <MainTabs 
+          players={mergedPlayers}
+          setPlayers={setLocalPlayers}
           tournaments={tournaments}
-          onStatsCardClick={handleStatsCardClick}
+          matches={mergedMatches}
+          setMatches={setLocalMatches}
+          activeTournament={activeTournament}
+          specialTypes={specials}
         />
-
-        {activeTournament && (
-          <div className="mb-4 sm:mb-6">
-            <RoundNavigation 
-              matches={activeTournamentMatches}
-              activeTournament={activeTournament}
-              currentRound={currentRound}
-            />
-          </div>
-        )}
-
-        <div className="w-full overflow-hidden">
-          <MainTabs 
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            tournaments={tournaments}
-            setTournaments={handleSetTournaments}
-            activeTournament={activeTournament}
-            setActiveTournament={handleSetActiveTournament}
-            setCurrentRound={setCurrentRound}
-            players={players}
-            setPlayers={handleSetPlayers}
-            matches={matches}
-            setMatches={handleSetMatches}
-            currentRound={currentRound}
-            specialTypes={specialTypes}
-            setSpecialTypes={handleSetSpecialTypes}
-          />
-        </div>
       </div>
+      <Toaster />
     </div>
   );
 };
