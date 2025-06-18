@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,16 +97,16 @@ const TournamentView = () => {
 
   const getStatusBadge = () => {
     if (tournament.completed) return <Badge className="bg-green-100 text-green-700">{t('tournament.completed.badge')}</Badge>;
-    if (tournament.isActive && isToday(tournament.start_date || '')) return <Badge className="bg-red-100 text-red-700">Now Playing</Badge>;
+    if (tournament.isActive && isToday(tournament.startDate || '')) return <Badge className="bg-red-100 text-red-700">Now Playing</Badge>;
     if (tournament.isActive) return <Badge className="bg-blue-100 text-blue-700">{t('tournament.active')}</Badge>;
     return <Badge className="bg-yellow-100 text-yellow-700">Upcoming Tournament</Badge>;
   };
 
   const getDateDisplay = () => {
-    if (tournament.start_date === tournament.end_date) {
-      return tournament.start_date;
+    if (tournament.startDate === tournament.endDate) {
+      return tournament.startDate;
     }
-    return `${tournament.start_date} - ${tournament.end_date}`;
+    return `${tournament.startDate} - ${tournament.endDate}`;
   };
 
   return (
@@ -144,9 +145,9 @@ const TournamentView = () => {
               <Users className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{activePlayers.length}/{tournament.max_players}</div>
+              <div className="text-2xl font-bold text-blue-600">{activePlayers.length}/{tournament.maxPlayers}</div>
               <p className="text-xs text-gray-600">
-                {t('player.linkerRijtje')}: {topGroupPlayers.length}/{tournament.max_players/2}, {t('player.rechterRijtje')}: {bottomGroupPlayers.length}/{tournament.max_players/2}
+                {t('player.linkerRijtje')}: {topGroupPlayers.length}/{tournament.maxPlayers/2}, {t('player.rechterRijtje')}: {bottomGroupPlayers.length}/{tournament.maxPlayers/2}
               </p>
             </CardContent>
           </Card>

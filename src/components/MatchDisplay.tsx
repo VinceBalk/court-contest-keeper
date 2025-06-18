@@ -42,7 +42,9 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
                 if (typeof playerSpecials === 'number') {
                   return total + playerSpecials;
                 } else if (typeof playerSpecials === 'object' && playerSpecials) {
-                  return total + Object.values(playerSpecials).reduce((sum, count) => sum + (typeof count === 'number' ? count : 0), 0);
+                  return total + Object.values(playerSpecials).reduce((sum, count) => {
+                    return sum + (typeof count === 'number' ? count : 0);
+                  }, 0);
                 }
                 return total;
               }, 0);

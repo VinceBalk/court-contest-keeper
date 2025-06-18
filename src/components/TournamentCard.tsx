@@ -55,10 +55,10 @@ const TournamentCard = ({
   };
 
   const getDateDisplay = () => {
-    if (tournament.start_date === tournament.end_date) {
-      return tournament.start_date;
+    if (tournament.startDate === tournament.endDate) {
+      return tournament.startDate;
     }
-    return `${tournament.start_date} - ${tournament.end_date}`;
+    return `${tournament.startDate} - ${tournament.endDate}`;
   };
 
   const handleCardClick = () => {
@@ -87,7 +87,7 @@ const TournamentCard = ({
         <p className="text-sm text-gray-600">{getDateDisplay()}</p>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Users className="h-4 w-4" />
-          <span>{t('general.max')} {tournament.max_players} {t('general.players')} ({tournament.max_players/2} {t('player.maxPlayersPerGroup')})</span>
+          <span>{t('general.max')} {tournament.maxPlayers} {t('general.players')} ({tournament.maxPlayers/2} {t('player.maxPlayersPerGroup')})</span>
         </div>
       </CardHeader>
       <CardContent className="pt-0">

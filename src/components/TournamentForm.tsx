@@ -74,15 +74,19 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
   };
 
   const confirmCreateTournament = () => {
-    const newTournament = {
+    const newTournament: Tournament & { isActive: boolean; completed: boolean; } = {
       id: `tournament-${Date.now()}`,
       name: newTournamentName.trim(),
-      start_date: newTournamentStartDate,
-      end_date: newTournamentEndDate || newTournamentStartDate,
-      max_players: newTournamentMaxPlayers,
+      description: '',
+      status: 'draft',
+      startDate: newTournamentStartDate,
+      endDate: newTournamentEndDate || newTournamentStartDate,
+      maxPlayers: newTournamentMaxPlayers,
+      currentRound: 1,
+      totalRounds: 3,
       isActive: false,
       completed: false
-    } as Tournament & { isActive: boolean; completed: boolean; };
+    };
 
     setTournaments([...tournaments, newTournament]);
     setNewTournamentName("");
@@ -93,7 +97,7 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
     
     toast({
       title: "Tournament Created",
-      description: `${newTournament.name} has been created with ${newTournament.max_players} players max`,
+      description: `${newTournament.name} has been created with ${newTournament.maxPlayers} players max`,
     });
   };
 
