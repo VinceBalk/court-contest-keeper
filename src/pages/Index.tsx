@@ -1,10 +1,10 @@
+
 import { useState } from "react";
 import RoundNavigation from "@/components/RoundNavigation";
 import { SpecialType } from "@/components/SpecialManagement";
 import StatsCards from "@/components/StatsCards";
 import MainHeader from "@/components/MainHeader";
 import MainTabs from "@/components/MainTabs";
-import ProtectedRoute from "@/components/ProtectedRoute";
 
 export interface Player {
   id: string;
@@ -115,49 +115,47 @@ const Index = () => {
   };
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
-        <div className="max-w-7xl mx-auto">
-          <MainHeader activeTournament={activeTournament} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
+      <div className="max-w-7xl mx-auto">
+        <MainHeader activeTournament={activeTournament} />
 
-          <StatsCards 
-            players={players}
-            activeTournament={activeTournament}
-            currentRound={currentRound}
-            specialTypes={specialTypes}
-            tournaments={tournaments}
-            onStatsCardClick={handleStatsCardClick}
-          />
+        <StatsCards 
+          players={players}
+          activeTournament={activeTournament}
+          currentRound={currentRound}
+          specialTypes={specialTypes}
+          tournaments={tournaments}
+          onStatsCardClick={handleStatsCardClick}
+        />
 
-          {activeTournament && (
-            <div className="mb-6 sm:mb-8">
-              <RoundNavigation 
-                matches={activeTournamentMatches}
-                activeTournament={activeTournament}
-                currentRound={currentRound}
-              />
-            </div>
-          )}
+        {activeTournament && (
+          <div className="mb-6 sm:mb-8">
+            <RoundNavigation 
+              matches={activeTournamentMatches}
+              activeTournament={activeTournament}
+              currentRound={currentRound}
+            />
+          </div>
+        )}
 
-          <MainTabs 
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            tournaments={tournaments}
-            setTournaments={handleSetTournaments}
-            activeTournament={activeTournament}
-            setActiveTournament={handleSetActiveTournament}
-            setCurrentRound={setCurrentRound}
-            players={players}
-            setPlayers={handleSetPlayers}
-            matches={matches}
-            setMatches={handleSetMatches}
-            currentRound={currentRound}
-            specialTypes={specialTypes}
-            setSpecialTypes={handleSetSpecialTypes}
-          />
-        </div>
+        <MainTabs 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          tournaments={tournaments}
+          setTournaments={handleSetTournaments}
+          activeTournament={activeTournament}
+          setActiveTournament={handleSetActiveTournament}
+          setCurrentRound={setCurrentRound}
+          players={players}
+          setPlayers={handleSetPlayers}
+          matches={matches}
+          setMatches={handleSetMatches}
+          currentRound={currentRound}
+          specialTypes={specialTypes}
+          setSpecialTypes={handleSetSpecialTypes}
+        />
       </div>
-    </ProtectedRoute>
+    </div>
   );
 };
 
