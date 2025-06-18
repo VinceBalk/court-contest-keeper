@@ -21,7 +21,7 @@ export const usePlayers = () => {
         phone: player.phone || '',
         skillLevel: player.skill_level || 5,
         isActive: player.status === 'active',
-        group: 'top' as 'top' | 'bottom', // Default to top, will be managed in app logic
+        group: player.player_group as 'top' | 'bottom', // Use the database column
         totalGames: 0, // Tournament-specific stats, managed in app
         totalSpecials: 0,
         totalPoints: 0,
@@ -51,6 +51,7 @@ export const useCreatePlayer = () => {
           phone: player.phone || null,
           skill_level: player.skillLevel,
           status: player.isActive ? 'active' : 'inactive',
+          player_group: player.group, // Save the group to the database
         })
         .select()
         .single();
@@ -77,6 +78,7 @@ export const useUpdatePlayer = () => {
           phone: player.phone || null,
           skill_level: player.skillLevel,
           status: player.isActive ? 'active' : 'inactive',
+          player_group: player.group, // Update the group in the database
           ranking_points: player.overallStats.totalPoints,
           total_matches_played: player.overallStats.matchesPlayed,
           total_games_won: Math.floor(player.overallStats.totalGames / 2), // Rough estimate

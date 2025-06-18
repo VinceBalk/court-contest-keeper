@@ -175,6 +175,7 @@ export type Database = {
           id: string
           name: string
           phone: string | null
+          player_group: string
           profile_id: string | null
           ranking_points: number | null
           skill_level: number | null
@@ -193,6 +194,7 @@ export type Database = {
           id?: string
           name: string
           phone?: string | null
+          player_group?: string
           profile_id?: string | null
           ranking_points?: number | null
           skill_level?: number | null
@@ -211,6 +213,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string | null
+          player_group?: string
           profile_id?: string | null
           ranking_points?: number | null
           skill_level?: number | null
