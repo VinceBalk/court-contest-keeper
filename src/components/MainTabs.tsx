@@ -10,6 +10,7 @@ import TournamentManagement from "./TournamentManagement";
 import SpecialManagement from "./SpecialManagement";
 import TranslationManagement from "./TranslationManagement";
 import SettingsManagement from "./SettingsManagement";
+import UserManagement from "./UserManagement";
 
 interface MainTabsProps {
   activeTab: string;
@@ -50,7 +51,7 @@ const MainTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 bg-white/80 backdrop-blur-sm gap-1 h-auto p-1">
+      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 bg-white/80 backdrop-blur-sm gap-1 h-auto p-1">
         <TabsTrigger value="tournaments" className="data-[state=active]:bg-orange-100 text-xs sm:text-sm px-2 py-2">
           <span className="hidden sm:inline">{t('nav.tournaments')}</span>
           <span className="sm:hidden">Tours</span>
@@ -58,6 +59,10 @@ const MainTabs = ({
         <TabsTrigger value="players" className="data-[state=active]:bg-blue-100 text-xs sm:text-sm px-2 py-2">
           <span className="hidden sm:inline">{t('nav.players')}</span>
           <span className="sm:hidden">Players</span>
+        </TabsTrigger>
+        <TabsTrigger value="users" className="data-[state=active]:bg-cyan-100 text-xs sm:text-sm px-2 py-2">
+          <span className="hidden sm:inline">Users</span>
+          <span className="sm:hidden">Users</span>
         </TabsTrigger>
         <TabsTrigger value="specials" className="data-[state=active]:bg-purple-100 text-xs sm:text-sm px-2 py-2">
           <span className="hidden sm:inline">{t('nav.specials')}</span>
@@ -67,15 +72,15 @@ const MainTabs = ({
           <span className="hidden sm:inline">{t('nav.matches')}</span>
           <span className="sm:hidden">Match</span>
         </TabsTrigger>
-        <TabsTrigger value="rankings" className="data-[state=active]:bg-yellow-100 text-xs sm:text-sm px-2 py-2 col-span-2 sm:col-span-1">
+        <TabsTrigger value="rankings" className="data-[state=active]:bg-yellow-100 text-xs sm:text-sm px-2 py-2">
           <span className="hidden sm:inline">{t('nav.rankings')}</span>
           <span className="sm:hidden">Rank</span>
         </TabsTrigger>
-        <TabsTrigger value="translations" className="data-[state=active]:bg-pink-100 text-xs sm:text-sm px-2 py-2 col-span-2 sm:col-span-1 lg:col-span-1">
+        <TabsTrigger value="translations" className="data-[state=active]:bg-pink-100 text-xs sm:text-sm px-2 py-2">
           <span className="hidden lg:inline">{t('nav.translations')}</span>
           <span className="lg:hidden">Lang</span>
         </TabsTrigger>
-        <TabsTrigger value="settings" className="data-[state=active]:bg-gray-100 text-xs sm:text-sm px-2 py-2 col-span-2 sm:col-span-2 lg:col-span-1">
+        <TabsTrigger value="settings" className="data-[state=active]:bg-gray-100 text-xs sm:text-sm px-2 py-2">
           <span className="hidden sm:inline">{t('nav.settings')}</span>
           <span className="sm:hidden">Set</span>
         </TabsTrigger>
@@ -99,6 +104,10 @@ const MainTabs = ({
           setPlayers={setPlayers}
           matches={activeTournamentMatches}
         />
+      </TabsContent>
+
+      <TabsContent value="users">
+        <UserManagement />
       </TabsContent>
 
       <TabsContent value="specials">

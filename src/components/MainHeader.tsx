@@ -1,6 +1,10 @@
 
-import { Trophy } from "lucide-react";
+import { Trophy, LogIn, LogOut, User } from "lucide-react";
 import { useT } from "@/contexts/TranslationContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { Tournament } from "@/pages/Index";
 
@@ -10,11 +14,41 @@ interface MainHeaderProps {
 
 const MainHeader = ({ activeTournament }: MainHeaderProps) => {
   const { t } = useT();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <header className="mb-8 text-center">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex-1" />
+        <div className="flex-1">
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="flex items-center gap-1">
+                <User className="h-3 w-3" />
+                {user.email}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="flex items-center gap-1"
+              >
+                <LogOut className="h-3 w-3" />
+                Sign Out
+              </Button>
+            </div>
+          ) : (
+            <Link to="/auth">
+              <Button variant="outline" size="sm" className="flex items-center gap-1">
+                <LogIn className="h-3 w-3" />
+                Sign In
+              </Button>
+            </Link>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           <Trophy className="h-10 w-10 text-yellow-500" />
           <h1 className="text-4xl font-bold text-gray-800">{t('header.title')}</h1>
