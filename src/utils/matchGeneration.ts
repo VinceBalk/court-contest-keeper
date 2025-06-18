@@ -1,6 +1,11 @@
 
 import { Player, Match, Tournament } from "@/pages/Index";
 
+const getMatchNumber = (matchIndex: number, round: number) => {
+  // Round 1: matches 1-3 per court, Round 2: matches 4-6 per court, etc.
+  return (matchIndex % 3) + 1 + ((round - 1) * 3);
+};
+
 export const generateFinalRoundMatches = (
   group: 'top' | 'bottom', 
   round: number, 
@@ -50,6 +55,8 @@ export const generateFinalRoundMatches = (
 
   pairings.forEach((pairing, matchIndex) => {
     const court = Math.floor(matchIndex / 3) + 1;
+    const matchNumber = getMatchNumber(matchIndex, round);
+    
     newMatches.push({
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,
@@ -86,23 +93,27 @@ export const generateRandomMatches = (
   // Generate 6 matches per group (3 courts x 2 matches per court)
   for (let matchIndex = 0; matchIndex < 6; matchIndex++) {
     const court = Math.floor(matchIndex / 3) + 1; // Court 1 or 2 for each group
-    const playersForMatch = shuffled.slice((matchIndex % 3) * 2 + (Math.floor(matchIndex / 3) * 6), (matchIndex % 3) * 2 + 4 + (Math.floor(matchIndex / 3) * 6));
+    const matchNumber = getMatchNumber(matchIndex, round);
     
-    if (playersForMatch.length === 4) {
-      newMatches.push({
-        id: `match-${group}-${round}-${matchIndex}`,
-        tournamentId: activeTournament.id,
-        round,
-        group,
-        court: group === 'top' ? court : court + 2, // Bottom group uses courts 3-4
-        team1: [playersForMatch[0].id, playersForMatch[1].id],
-        team2: [playersForMatch[2].id, playersForMatch[3].id],
-        team1Score: 0,
-        team2Score: 0,
-        specialPoints: {},
-        completed: false
-      });
-    }
+    // Create teams for this match
+    const team1Player1 = shuffled[matchIndex * 2 % shuffled.length];
+    const team1Player2 = shuffled[(matchIndex * 2 + 1) % shuffled.length];
+    const team2Player1 = shuffled[(matchIndex * 2 + 2) % shuffled.length];
+    const team2Player2 = shuffled[(matchIndex * 2 + 3) % shuffled.length];
+    
+    newMatches.push({
+      id: `match-${group}-${round}-${matchIndex}`,
+      tournamentId: activeTournament.id,
+      round,
+      group,
+      court: group === 'top' ? court : court + 2, // Bottom group uses courts 3-4
+      team1: [team1Player1.id, team1Player2.id],
+      team2: [team2Player1.id, team2Player2.id],
+      team1Score: 0,
+      team2Score: 0,
+      specialPoints: {},
+      completed: false
+    });
   }
 
   return newMatches;
@@ -122,6 +133,8 @@ export const generateManualMatches = (
 
   manualPairings.forEach((pairing, matchIndex) => {
     const court = Math.floor(matchIndex / 3) + 1;
+    const matchNumber = getMatchNumber(matchIndex, round);
+    
     newMatches.push({
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,

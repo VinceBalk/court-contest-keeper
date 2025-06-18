@@ -1,8 +1,10 @@
+
 import { useState } from "react";
 import { Player, Match, Tournament } from "@/pages/Index";
 import { SpecialType } from "./SpecialManagement";
 import { useToast } from "@/hooks/use-toast";
 import { generateFinalRoundMatches, generateRandomMatches, generateManualMatches } from "@/utils/matchGeneration";
+import { useMatches, useCreateMatch } from "@/hooks/useMatches";
 import ScoreEntry from "./ScoreEntry";
 import MatchDisplay from "./MatchDisplay";
 import ManualPairingSetup from "./ManualPairingSetup";
@@ -11,6 +13,8 @@ import RankingScoring from "./RankingScoring";
 import RoundHeader from "./RoundHeader";
 import MatchGenerationControls from "./MatchGenerationControls";
 import MatchGenerationStatus from "./MatchGenerationStatus";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 
 interface TournamentScheduleProps {
   players: Player[];
@@ -40,7 +44,9 @@ const TournamentSchedule = ({
     top: { team1: [string, string], team2: [string, string] }[];
     bottom: { team1: [string, string], team2: [string, string] }[];
   }>({ top: [], bottom: [] });
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const createMatchMutation = useCreateMatch();
 
   const generateMatchPreview = () => {
     if (!activeTournament) {
@@ -90,6 +96,71 @@ const TournamentSchedule = ({
       title: `${matchType} Matches Confirmed`,
       description: `Round ${currentRound} matches have been created`,
     });
+  };
+
+  const saveManualMatches = async () => {
+    if (!activeTournament || !isManualMode) return;
+    
+    setIsSaving(true);
+    
+    try {
+      // Validate that all manual pairings are complete
+      const topIncomplete = manualPairings.top.some(pairing => 
+        !pairing.team1[0] || !pairing.team1[1] || !pairing.team2[0] || !pairing.team2[1]
+      );
+      const bottomIncomplete = manualPairings.bottom.some(pairing => 
+        !pairing.team1[0] || !pairing.team1[1] || !pairing.team2[0] || !pairing.team2[1]
+      );
+      
+      if (topIncomplete || bottomIncomplete) {
+        toast({
+          title: "Incomplete Pairings",
+          description: "Please complete all team pairings before saving",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Generate matches from manual pairings
+      const topMatches = generateManualMatches('top', currentRound, manualPairings.top, activeTournament);
+      const bottomMatches = generateManualMatches('bottom', currentRound, manualPairings.bottom, activeTournament);
+      const allNewMatches = [...topMatches, ...bottomMatches];
+
+      // Save matches to database and local state
+      const savedMatches = [];
+      for (const match of allNewMatches) {
+        try {
+          await createMatchMutation.mutateAsync({
+            ...match,
+            tournamentId: activeTournament.id
+          });
+          savedMatches.push(match);
+        } catch (error) {
+          console.error('Failed to save match:', error);
+        }
+      }
+
+      // Update local state
+      const existingMatches = matches.filter(m => m.round !== currentRound);
+      setMatches([...existingMatches, ...savedMatches]);
+      
+      toast({
+        title: "Matches Saved",
+        description: `Round ${currentRound} manual matches have been saved successfully`,
+      });
+      
+      setIsManualMode(false);
+      setManualPairings({ top: [], bottom: [] });
+      
+    } catch (error) {
+      toast({
+        title: "Save Failed",
+        description: "Failed to save matches. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const regenerateMatches = () => {
@@ -219,6 +290,8 @@ const TournamentSchedule = ({
   const canGenerateMatches = topGroupPlayers.length >= 4 && topGroupPlayers.length % 2 === 0 && 
                             bottomGroupPlayers.length >= 4 && bottomGroupPlayers.length % 2 === 0;
 
+  const hasUnsavedManualPairings = isManualMode && manualPairings.top.some(p => p.team1[0] || p.team1[1] || p.team2[0] || p.team2[1]) && currentRoundMatches.length === 0;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -229,15 +302,27 @@ const TournamentSchedule = ({
           hasPreviewMatches={!!previewMatches}
           onNextRound={() => setCurrentRound(currentRound + 1)}
         />
-        <MatchGenerationControls
-          currentRound={currentRound}
-          canGenerateMatches={canGenerateMatches}
-          hasCurrentRoundMatches={currentRoundMatches.length > 0}
-          hasPreviewMatches={!!previewMatches}
-          isManualMode={isManualMode}
-          onGeneratePreview={generateMatchPreview}
-          onToggleManualMode={handleToggleManualMode}
-        />
+        <div className="flex gap-2">
+          {hasUnsavedManualPairings && (
+            <Button 
+              onClick={saveManualMatches}
+              disabled={isSaving}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isSaving ? 'Saving...' : 'Save Round'}
+            </Button>
+          )}
+          <MatchGenerationControls
+            currentRound={currentRound}
+            canGenerateMatches={canGenerateMatches}
+            hasCurrentRoundMatches={currentRoundMatches.length > 0}
+            hasPreviewMatches={!!previewMatches}
+            isManualMode={isManualMode}
+            onGeneratePreview={generateMatchPreview}
+            onToggleManualMode={handleToggleManualMode}
+          />
+        </div>
       </div>
 
       <MatchGenerationStatus
