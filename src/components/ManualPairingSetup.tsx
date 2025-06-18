@@ -20,6 +20,7 @@ interface ManualPairingSetupProps {
 const ManualPairingSetup = ({ manualPairings, players, onUpdatePairing }: ManualPairingSetupProps) => {
   const getMatchInfo = (group: 'top' | 'bottom', matchIndex: number, currentRound: number = 1) => {
     const court = Math.floor(matchIndex / 3) + 1;
+    // Fixed: Top group uses courts 1-2, bottom group uses courts 3-4
     const courtAdjusted = group === 'top' ? court : court + 2;
     const matchNumber = (matchIndex % 3) + 1 + ((currentRound - 1) * 3);
     
@@ -33,13 +34,17 @@ const ManualPairingSetup = ({ manualPairings, players, onUpdatePairing }: Manual
     <Card className="bg-blue-50 border-blue-200">
       <CardHeader>
         <CardTitle className="text-blue-700">Manual Match Setup - Round 1</CardTitle>
-        <p className="text-sm text-blue-600">Round 1 uses matches 1-3 per court, Round 2 will use matches 4-6</p>
+        <p className="text-sm text-blue-600">
+          Linker Rijtje uses courts 1-2, Rechter Rijtje uses courts 3-4. Round 1 uses matches 1-3 per court, Round 2 will use matches 4-6
+        </p>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {(['top', 'bottom'] as const).map(group => (
             <div key={group}>
-              <h3 className="font-semibold mb-4">{group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}</h3>
+              <h3 className="font-semibold mb-4">
+                {group === 'top' ? 'Linker Rijtje (Courts 1-2)' : 'Rechter Rijtje (Courts 3-4)'}
+              </h3>
               <div className="space-y-4">
                 {manualPairings[group].map((pairing, matchIndex) => {
                   const matchInfo = getMatchInfo(group, matchIndex, 1);

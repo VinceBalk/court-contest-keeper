@@ -24,7 +24,7 @@ export const generateFinalRoundMatches = (
 
   // Create balanced pairings based on rankings
   const pairings = [
-    // Court 1 matches
+    // Court matches
     {
       team1: [rankedPlayers[0], rankedPlayers[7]], // 1st & 8th
       team2: [rankedPlayers[3], rankedPlayers[4]]  // 4th & 5th
@@ -33,7 +33,7 @@ export const generateFinalRoundMatches = (
       team1: [rankedPlayers[1], rankedPlayers[6]], // 2nd & 7th
       team2: [rankedPlayers[2], rankedPlayers[5]]  // 3rd & 6th
     },
-    // Court 2 matches - create different combinations for variety
+    // Additional matches for variety
     {
       team1: [rankedPlayers[0], rankedPlayers[6]], // 1st & 7th
       team2: [rankedPlayers[2], rankedPlayers[4]]  // 3rd & 5th
@@ -55,14 +55,16 @@ export const generateFinalRoundMatches = (
 
   pairings.forEach((pairing, matchIndex) => {
     const court = Math.floor(matchIndex / 3) + 1;
+    // Fixed: Top group uses courts 1-2, bottom group uses courts 3-4
+    const adjustedCourt = group === 'top' ? court : court + 2;
     const matchNumber = getMatchNumber(matchIndex, round);
     
     newMatches.push({
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,
       round,
-      group, // This was already correct
-      court: group === 'top' ? court : court + 2,
+      group, // Correctly set group
+      court: adjustedCourt,
       team1: [pairing.team1[0].id, pairing.team1[1].id],
       team2: [pairing.team2[0].id, pairing.team2[1].id],
       team1Score: 0,
@@ -93,6 +95,8 @@ export const generateRandomMatches = (
   // Generate 6 matches per group (3 courts x 2 matches per court)
   for (let matchIndex = 0; matchIndex < 6; matchIndex++) {
     const court = Math.floor(matchIndex / 3) + 1; // Court 1 or 2 for each group
+    // Fixed: Top group uses courts 1-2, bottom group uses courts 3-4
+    const adjustedCourt = group === 'top' ? court : court + 2;
     const matchNumber = getMatchNumber(matchIndex, round);
     
     // Create teams for this match
@@ -105,8 +109,8 @@ export const generateRandomMatches = (
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,
       round,
-      group, // Fixed: Now properly assigns the group parameter
-      court: group === 'top' ? court : court + 2, // Bottom group uses courts 3-4
+      group, // Correctly set group
+      court: adjustedCourt,
       team1: [team1Player1.id, team1Player2.id],
       team2: [team2Player1.id, team2Player2.id],
       team1Score: 0,
@@ -133,14 +137,16 @@ export const generateManualMatches = (
 
   manualPairings.forEach((pairing, matchIndex) => {
     const court = Math.floor(matchIndex / 3) + 1;
+    // Fixed: Top group uses courts 1-2, bottom group uses courts 3-4
+    const adjustedCourt = group === 'top' ? court : court + 2;
     const matchNumber = getMatchNumber(matchIndex, round);
     
     newMatches.push({
       id: `match-${group}-${round}-${matchIndex}`,
       tournamentId: activeTournament.id,
       round,
-      group, // Fixed: Now properly assigns the group parameter
-      court: group === 'top' ? court : court + 2,
+      group, // Correctly set group
+      court: adjustedCourt,
       team1: pairing.team1,
       team2: pairing.team2,
       team1Score: 0,
