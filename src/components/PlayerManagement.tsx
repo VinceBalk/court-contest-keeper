@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,16 +26,6 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
       toast({
         title: "Error",
         description: "Please enter a player name",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const groupPlayers = players.filter(p => p.group === newPlayerGroup);
-    if (groupPlayers.length >= 8) {
-      toast({
-        title: "Group Full",
-        description: `The ${newPlayerGroup === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'} group already has 8 players`,
         variant: "destructive"
       });
       return;
@@ -226,7 +217,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-yellow-700">
               <Crown className="h-5 w-5" />
-              Linker Rijtje ({topGroupPlayers.length}/8)
+              Linker Rijtje ({topGroupPlayers.length} players)
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -243,7 +234,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
               <Target className="h-5 w-5" />
-              Rechter Rijtje ({bottomGroupPlayers.length}/8)
+              Rechter Rijtje ({bottomGroupPlayers.length} players)
             </CardTitle>
           </CardHeader>
           <CardContent>

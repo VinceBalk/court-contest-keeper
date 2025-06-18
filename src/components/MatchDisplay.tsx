@@ -36,7 +36,7 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
             const team2Players = match.team2.map(id => players.find(p => p.id === id)?.name).join(" & ");
             
             // Calculate total special points for display
-            const getSpecialCount = (specialPoints: any) => {
+            const getSpecialCount = (specialPoints: any): number => {
               if (!specialPoints || typeof specialPoints !== 'object') return 0;
               return Object.values(specialPoints).reduce((total: number, playerSpecials: any) => {
                 if (typeof playerSpecials === 'number') {
@@ -45,6 +45,8 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
                 return total;
               }, 0);
             };
+            
+            const specialCount = getSpecialCount(match.specialPoints);
             
             return (
               <div key={match.id} className="p-4 bg-white/80 rounded-lg border shadow-sm">
@@ -63,9 +65,9 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
                     <span>{team2Players}</span>
                     <span className="font-bold">{match.team2Score}</span>
                   </div>
-                  {match.completed && getSpecialCount(match.specialPoints) > 0 && (
+                  {match.completed && specialCount > 0 && (
                     <div className="text-xs text-gray-600 mt-1">
-                      Special points: {getSpecialCount(match.specialPoints)}
+                      Special points: {specialCount}
                     </div>
                   )}
                 </div>

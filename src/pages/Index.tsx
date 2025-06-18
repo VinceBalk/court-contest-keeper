@@ -89,9 +89,9 @@ const Index = () => {
               <Users className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{players.length}/16</div>
+              <div className="text-2xl font-bold text-blue-600">{players.length}</div>
               <p className="text-xs text-gray-600">
-                Linker: {topGroupPlayers.length}/8, Rechter: {bottomGroupPlayers.length}/8
+                Linker: {topGroupPlayers.length}, Rechter: {bottomGroupPlayers.length}
               </p>
             </CardContent>
           </Card>

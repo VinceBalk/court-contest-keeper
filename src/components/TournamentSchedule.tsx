@@ -197,8 +197,12 @@ const TournamentSchedule = ({
   };
 
   const currentRoundMatches = matches.filter(m => m.round === currentRound);
-  const canGenerateMatches = players.filter(p => p.group === 'top').length === 8 && 
-                            players.filter(p => p.group === 'bottom').length === 8;
+  const topGroupPlayers = players.filter(p => p.group === 'top');
+  const bottomGroupPlayers = players.filter(p => p.group === 'bottom');
+  
+  // Check if both groups have even numbers of players (minimum 4 each for doubles)
+  const canGenerateMatches = topGroupPlayers.length >= 4 && topGroupPlayers.length % 2 === 0 && 
+                            bottomGroupPlayers.length >= 4 && bottomGroupPlayers.length % 2 === 0;
 
   return (
     <div className="space-y-6">
@@ -255,7 +259,9 @@ const TournamentSchedule = ({
         <Card className="bg-yellow-50 border-yellow-200">
           <CardContent className="pt-6">
             <p className="text-yellow-800 text-center">
-              Both groups need exactly 8 players each to generate matches
+              Both groups need at least 4 players each with even numbers to generate matches.
+              <br />
+              Current: Linker Rijtje ({topGroupPlayers.length}), Rechter Rijtje ({bottomGroupPlayers.length})
             </p>
           </CardContent>
         </Card>
