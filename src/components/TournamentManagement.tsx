@@ -50,10 +50,10 @@ const TournamentManagement = ({
       return;
     }
 
-    if (newTournamentMaxPlayers < 4 || newTournamentMaxPlayers % 2 !== 0) {
+    if (newTournamentMaxPlayers < 8 || newTournamentMaxPlayers % 4 !== 0) {
       toast({
         title: "Error",
-        description: "Maximum players must be an even number and at least 4",
+        description: "Maximum players must be a multiple of 4 and at least 8",
         variant: "destructive"
       });
       return;
@@ -191,8 +191,8 @@ const TournamentManagement = ({
                 <Users className="h-4 w-4 text-gray-600" />
                 <Input
                   type="number"
-                  min="4"
-                  step="2"
+                  min="8"
+                  step="4"
                   value={newTournamentMaxPlayers}
                   onChange={(e) => setNewTournamentMaxPlayers(Number(e.target.value))}
                   className="w-24"
@@ -205,7 +205,7 @@ const TournamentManagement = ({
               </Button>
             </div>
             <p className="text-sm text-gray-600">
-              Maximum players must be an even number (minimum 4). Default is 16 players (8 per group).
+              Maximum players must be a multiple of 4 (minimum 8). Default is 16 players (8 per group).
             </p>
           </div>
         </CardContent>
