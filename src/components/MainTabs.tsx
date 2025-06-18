@@ -9,6 +9,7 @@ import Rankings from "./Rankings";
 import TournamentManagement from "./TournamentManagement";
 import SpecialManagement from "./SpecialManagement";
 import TranslationManagement from "./TranslationManagement";
+import SettingsManagement from "./SettingsManagement";
 
 interface MainTabsProps {
   activeTab: string;
@@ -49,7 +50,7 @@ const MainTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-      <TabsList className="grid w-full grid-cols-6 bg-white/80 backdrop-blur-sm">
+      <TabsList className="grid w-full grid-cols-7 bg-white/80 backdrop-blur-sm">
         <TabsTrigger value="tournaments" className="data-[state=active]:bg-orange-100">
           {t('nav.tournaments')}
         </TabsTrigger>
@@ -67,6 +68,9 @@ const MainTabs = ({
         </TabsTrigger>
         <TabsTrigger value="translations" className="data-[state=active]:bg-pink-100">
           {t('nav.translations')}
+        </TabsTrigger>
+        <TabsTrigger value="settings" className="data-[state=active]:bg-gray-100">
+          {t('nav.settings')}
         </TabsTrigger>
       </TabsList>
 
@@ -121,6 +125,10 @@ const MainTabs = ({
 
       <TabsContent value="translations">
         <TranslationManagement />
+      </TabsContent>
+
+      <TabsContent value="settings">
+        <SettingsManagement />
       </TabsContent>
     </Tabs>
   );

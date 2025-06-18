@@ -27,7 +27,8 @@ export interface Player {
 export interface Tournament {
   id: string;
   name: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   isActive: boolean;
   completed: boolean;
   maxPlayers: number; // Maximum number of players allowed (default 16)
@@ -105,6 +106,9 @@ const Index = () => {
       case 'activePlayers':
         setActiveTab('players');
         break;
+      case 'settings':
+        setActiveTab('settings');
+        break;
       default:
         break;
     }
@@ -120,6 +124,7 @@ const Index = () => {
           activeTournament={activeTournament}
           currentRound={currentRound}
           specialTypes={specialTypes}
+          tournaments={tournaments}
           onStatsCardClick={handleStatsCardClick}
         />
 

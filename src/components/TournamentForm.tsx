@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Users } from "lucide-react";
 import { Tournament } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/contexts/TranslationContext";
 import {
   Dialog,
   DialogContent,
@@ -21,17 +22,40 @@ interface TournamentFormProps {
 }
 
 const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) => {
+  const { t } = useT();
   const [newTournamentName, setNewTournamentName] = useState("");
-  const [newTournamentDate, setNewTournamentDate] = useState("");
+  const [newTournamentStartDate, setNewTournamentStartDate] = useState("");
+  const [newTournamentEndDate, setNewTournamentEndDate] = useState("");
   const [newTournamentMaxPlayers, setNewTournamentMaxPlayers] = useState(16);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { toast } = useToast();
 
+  const handleStartDateChange = (date: string) => {
+    setNewTournamentStartDate(date);
+    // If end date is empty or before start date, set it to start date
+    if (!newTournamentEndDate || newTournamentEndDate < date) {
+      setNewTournamentEndDate(date);
+    }
+  };
+
   const handleCreateTournamentClick = () => {
-    if (!newTournamentName.trim() || !newTournamentDate) {
+    if (!newTournamentName.trim() || !newTournamentStartDate) {
       toast({
-        title: "Error",
-        description: "Please enter tournament name and date",
+        title: t('general.error'),
+        description: "Please enter tournament name and start date",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newTournamentEndDate) {
+      setNewTournamentEndDate(newTournamentStartDate);
+    }
+
+    if (newTournamentEndDate < newTournamentStartDate) {
+      toast({
+        title: t('general.error'),
+        description: "End date cannot be before start date",
         variant: "destructive"
       });
       return;
@@ -39,7 +63,7 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
 
     if (newTournamentMaxPlayers < 8 || newTournamentMaxPlayers % 4 !== 0) {
       toast({
-        title: "Error",
+        title: t('general.error'),
         description: "Maximum players must be a multiple of 4 and at least 8",
         variant: "destructive"
       });
@@ -53,7 +77,8 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
     const newTournament: Tournament = {
       id: `tournament-${Date.now()}`,
       name: newTournamentName.trim(),
-      date: newTournamentDate,
+      startDate: newTournamentStartDate,
+      endDate: newTournamentEndDate || newTournamentStartDate,
       isActive: false,
       completed: false,
       maxPlayers: newTournamentMaxPlayers
@@ -61,7 +86,8 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
 
     setTournaments([...tournaments, newTournament]);
     setNewTournamentName("");
-    setNewTournamentDate("");
+    setNewTournamentStartDate("");
+    setNewTournamentEndDate("");
     setNewTournamentMaxPlayers(16);
     setShowConfirmDialog(false);
     
@@ -81,24 +107,37 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-green-600" />
-            Create New Tournament
+            {t('tournament.create.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex gap-4">
               <Input
-                placeholder="Tournament name"
+                placeholder={t('tournament.name.placeholder')}
                 value={newTournamentName}
                 onChange={(e) => setNewTournamentName(e.target.value)}
                 className="flex-1"
               />
-              <Input
-                type="date"
-                value={newTournamentDate}
-                onChange={(e) => setNewTournamentDate(e.target.value)}
-                className="w-48"
-              />
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{t('tournament.startDate')}</label>
+                <Input
+                  type="date"
+                  value={newTournamentStartDate}
+                  onChange={(e) => handleStartDateChange(e.target.value)}
+                  className="w-40"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">{t('tournament.endDate')}</label>
+                <Input
+                  type="date"
+                  value={newTournamentEndDate}
+                  onChange={(e) => setNewTournamentEndDate(e.target.value)}
+                  min={newTournamentStartDate}
+                  className="w-40"
+                />
+              </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-gray-600" />
                 <Input
@@ -108,12 +147,12 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
                   value={newTournamentMaxPlayers}
                   onChange={(e) => setNewTournamentMaxPlayers(Number(e.target.value))}
                   className="w-24"
-                  placeholder="Max players"
+                  placeholder={t('tournament.maxPlayers.label')}
                 />
               </div>
               <Button onClick={handleCreateTournamentClick} className="bg-green-600 hover:bg-green-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Create
+                {t('general.create')}
               </Button>
             </div>
             <p className="text-sm text-gray-600">
@@ -126,9 +165,9 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Tournament Details</DialogTitle>
+            <DialogTitle>{t('tournament.confirm.title')}</DialogTitle>
             <DialogDescription>
-              Please confirm the tournament details before creating:
+              {t('tournament.confirm.description')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-4">
@@ -136,7 +175,10 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
               <strong>Tournament Name:</strong> {newTournamentName}
             </div>
             <div>
-              <strong>Date:</strong> {newTournamentDate}
+              <strong>{t('tournament.startDate')}:</strong> {newTournamentStartDate}
+            </div>
+            <div>
+              <strong>{t('tournament.endDate')}:</strong> {newTournamentEndDate || newTournamentStartDate}
             </div>
             <div>
               <strong>Maximum Players:</strong> {newTournamentMaxPlayers} ({newTournamentMaxPlayers/2} per group)
@@ -144,10 +186,10 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={cancelCreateTournament}>
-              Cancel
+              {t('general.cancel')}
             </Button>
             <Button onClick={confirmCreateTournament} className="bg-green-600 hover:bg-green-700">
-              Create Tournament
+              {t('general.create')} Tournament
             </Button>
           </DialogFooter>
         </DialogContent>

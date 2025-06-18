@@ -28,6 +28,12 @@ export const defaultTranslations: Translation[] = [
   { id: '36', key: 'tournament.deletedDescription', en: 'has been deleted', nl: 'is verwijderd', category: 'tournament' },
   { id: '37', key: 'tournament.active', en: 'Active', nl: 'Actief', category: 'tournament' },
   { id: '38', key: 'tournament.activeDescription', en: 'Active Tournament:', nl: 'Actief toernooi:', category: 'tournament' },
+  { id: '73', key: 'tournament.startDate', en: 'Start Date', nl: 'Startdatum', category: 'tournament' },
+  { id: '74', key: 'tournament.endDate', en: 'End Date', nl: 'Einddatum', category: 'tournament' },
+  { id: '75', key: 'tournament.upcoming', en: 'Upcoming Tournament', nl: 'Aankomend toernooi', category: 'tournament' },
+  { id: '76', key: 'tournament.noTournament', en: 'No tournament yet', nl: 'Nog geen toernooi', category: 'tournament' },
+  { id: '77', key: 'tournament.spots', en: 'spots', nl: 'plekken', category: 'tournament' },
+  { id: '78', key: 'tournament.available', en: 'available', nl: 'beschikbaar', category: 'tournament' },
   
   // Player Management
   { id: '8', key: 'player.add.title', en: 'Add New Player', nl: 'Nieuwe speler toevoegen', category: 'player' },
@@ -88,6 +94,7 @@ export const defaultTranslations: Translation[] = [
   { id: '26', key: 'nav.matches', en: 'Matches & Schedule', nl: 'Wedstrijden & schema', category: 'navigation' },
   { id: '27', key: 'nav.rankings', en: 'Rankings & Stats', nl: 'Rankings & statistieken', category: 'navigation' },
   { id: '28', key: 'nav.translations', en: 'Translations', nl: 'Vertalingen', category: 'navigation' },
+  { id: '79', key: 'nav.settings', en: 'Settings', nl: 'Instellingen', category: 'navigation' },
   
   // Headers and Titles
   { id: '49', key: 'header.title', en: 'Padel Tournament Manager', nl: 'Padel toernooi manager', category: 'header' },

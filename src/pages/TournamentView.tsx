@@ -97,9 +97,16 @@ const TournamentView = () => {
 
   const getStatusBadge = () => {
     if (tournament.completed) return <Badge className="bg-green-100 text-green-700">{t('tournament.completed.badge')}</Badge>;
-    if (tournament.isActive && isToday(tournament.date)) return <Badge className="bg-red-100 text-red-700">Now Playing</Badge>;
+    if (tournament.isActive && isToday(tournament.startDate)) return <Badge className="bg-red-100 text-red-700">Now Playing</Badge>;
     if (tournament.isActive) return <Badge className="bg-blue-100 text-blue-700">{t('tournament.active')}</Badge>;
     return <Badge className="bg-yellow-100 text-yellow-700">Upcoming Tournament</Badge>;
+  };
+
+  const getDateDisplay = () => {
+    if (tournament.startDate === tournament.endDate) {
+      return tournament.startDate;
+    }
+    return `${tournament.startDate} - ${tournament.endDate}`;
   };
 
   return (
@@ -126,7 +133,7 @@ const TournamentView = () => {
             </div>
             <p className="text-gray-600 flex items-center justify-center gap-2">
               <Calendar className="h-4 w-4" />
-              {tournament.date}
+              {getDateDisplay()}
             </p>
           </div>
         </header>

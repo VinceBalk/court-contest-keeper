@@ -37,18 +37,25 @@ const TournamentCard = ({
 
   const getStatusLabel = () => {
     if (tournament.completed) return t('tournament.completed.badge');
-    if (tournament.isActive && isToday(tournament.date)) return 'Now Playing';
+    if (tournament.isActive && isToday(tournament.startDate)) return 'Now Playing';
     if (tournament.isActive) return t('tournament.active');
-    if (isFuture(tournament.date)) return 'Upcoming Tournament';
+    if (isFuture(tournament.startDate)) return 'Upcoming Tournament';
     return '';
   };
 
   const getStatusColor = () => {
     if (tournament.completed) return 'bg-green-100 text-green-700 border-green-300';
-    if (tournament.isActive && isToday(tournament.date)) return 'bg-red-100 text-red-700 border-red-300';
+    if (tournament.isActive && isToday(tournament.startDate)) return 'bg-red-100 text-red-700 border-red-300';
     if (tournament.isActive) return 'bg-blue-100 text-blue-700 border-blue-300';
-    if (isFuture(tournament.date)) return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+    if (isFuture(tournament.startDate)) return 'bg-yellow-100 text-yellow-700 border-yellow-300';
     return 'bg-gray-100 text-gray-700 border-gray-300';
+  };
+
+  const getDateDisplay = () => {
+    if (tournament.startDate === tournament.endDate) {
+      return tournament.startDate;
+    }
+    return `${tournament.startDate} - ${tournament.endDate}`;
   };
 
   const handleCardClick = () => {
@@ -74,7 +81,7 @@ const TournamentCard = ({
             <ArrowRight className="h-4 w-4 text-gray-400" />
           </div>
         </div>
-        <p className="text-sm text-gray-600">{tournament.date}</p>
+        <p className="text-sm text-gray-600">{getDateDisplay()}</p>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Users className="h-4 w-4" />
           <span>{t('general.max')} {tournament.maxPlayers} {t('general.players')} ({tournament.maxPlayers/2} {t('player.maxPlayersPerGroup')})</span>
