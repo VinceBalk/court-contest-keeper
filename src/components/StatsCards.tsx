@@ -24,15 +24,15 @@ const StatsCards = ({
 }: StatsCardsProps) => {
   const { t } = useT();
 
-  const activePlayers = players.filter(p => p.isActive);
+  const activePlayers = players?.filter(p => p.isActive) || [];
   const topGroupPlayers = activePlayers.filter(p => p.group === 'top').sort((a, b) => a.name.localeCompare(b.name));
   const bottomGroupPlayers = activePlayers.filter(p => p.group === 'bottom').sort((a, b) => a.name.localeCompare(b.name));
 
   // Get upcoming tournament (future tournament, not active)
   const today = new Date();
   const upcomingTournament = tournaments
-    .filter(t => !t.isActive && !t.completed && new Date(t.startDate) > today)
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())[0];
+    ?.filter(t => !t.isActive && !t.completed && new Date(t.startDate) > today)
+    ?.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())[0];
 
   const getCurrentRoundCardContent = () => {
     if (activeTournament) {
@@ -97,7 +97,7 @@ const StatsCards = ({
           <Calendar className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">{players.length}</div>
+          <div className="text-2xl font-bold text-green-600">{players?.length || 0}</div>
           <p className="text-xs text-gray-600">
             {t('player.availablePool')}
           </p>
@@ -127,7 +127,7 @@ const StatsCards = ({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-orange-600">
-            {specialTypes.filter(s => s.isActive).length}
+            {specialTypes?.filter(s => s.isActive).length || 0}
           </div>
           <p className="text-xs text-gray-600">{t('general.activeSpecials')}</p>
         </CardContent>
