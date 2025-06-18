@@ -47,6 +47,18 @@ export const defaultTranslations: Translation[] = [
   { id: '16', key: 'player.total', en: 'total', nl: 'totaal', category: 'player' },
   { id: '39', key: 'player.maxPlayersPerGroup', en: 'per group', nl: 'per groep', category: 'player' },
   { id: '40', key: 'player.availablePool', en: 'Available player pool', nl: 'Beschikbare spelersgroep', category: 'player' },
+  { id: '80', key: 'player.name.placeholder', en: 'Player name', nl: 'Speler naam', category: 'player' },
+  { id: '81', key: 'player.email.placeholder', en: 'Email (optional)', nl: 'Email (optioneel)', category: 'player' },
+  { id: '82', key: 'player.phone.placeholder', en: 'Phone (optional)', nl: 'Telefoon (optioneel)', category: 'player' },
+  { id: '83', key: 'player.level', en: 'Level', nl: 'Level', category: 'player' },
+  { id: '84', key: 'player.topGroup', en: 'Top Group', nl: 'Linker rijtje', category: 'player' },
+  { id: '85', key: 'player.bottomGroup', en: 'Bottom Group', nl: 'Rechter rijtje', category: 'player' },
+  { id: '86', key: 'player.added', en: 'Player Added', nl: 'Speler toegevoegd', category: 'player' },
+  { id: '87', key: 'player.deleted', en: 'Player Deleted', nl: 'Speler verwijderd', category: 'player' },
+  { id: '88', key: 'player.enterName', en: 'Please enter a player name', nl: 'Voer een speler naam in', category: 'player' },
+  { id: '89', key: 'player.addedToGroup', en: 'has been added to the', nl: 'is toegevoegd aan de', category: 'player' },
+  { id: '90', key: 'player.removed', en: 'has been removed', nl: 'is verwijderd', category: 'player' },
+  { id: '91', key: 'player.group.label', en: 'group', nl: 'groep', category: 'player' },
   
   // Special Management (renamed from Special Types)
   { id: '52', key: 'special.create.title', en: 'Create New Special', nl: 'Nieuwe special aanmaken', category: 'special' },
@@ -86,6 +98,12 @@ export const defaultTranslations: Translation[] = [
   { id: '46', key: 'general.activeSpecials', en: 'Active Specials', nl: 'Actieve specials', category: 'general' },
   { id: '47', key: 'general.max', en: 'Max', nl: 'Max', category: 'general' },
   { id: '48', key: 'general.players', en: 'players', nl: 'spelers', category: 'general' },
+  { id: '92', key: 'general.add', en: 'Add', nl: 'Toevoegen', category: 'general' },
+  { id: '93', key: 'general.active', en: 'Active', nl: 'Actief', category: 'general' },
+  { id: '94', key: 'general.inactive', en: 'Inactive', nl: 'Inactief', category: 'general' },
+  { id: '95', key: 'general.skill', en: 'Skill', nl: 'Vaardigheid', category: 'general' },
+  { id: '96', key: 'general.email', en: 'Email', nl: 'Email', category: 'general' },
+  { id: '97', key: 'general.phone', en: 'Phone', nl: 'Telefoon', category: 'general' },
   
   // Navigation
   { id: '23', key: 'nav.tournaments', en: 'Tournaments', nl: 'Toernooien', category: 'navigation' },
