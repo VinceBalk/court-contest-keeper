@@ -39,10 +39,10 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
             const getSpecialCount = (specialPoints: any) => {
               if (!specialPoints || typeof specialPoints !== 'object') return 0;
               return Object.values(specialPoints).reduce((total: number, playerSpecials: any) => {
-                if (Array.isArray(playerSpecials)) {
-                  return total + playerSpecials.reduce((sum: number, special: any) => sum + (special.count || 0), 0);
+                if (typeof playerSpecials === 'number') {
+                  return total + playerSpecials;
                 }
-                return total + (typeof playerSpecials === 'number' ? playerSpecials : 0);
+                return total;
               }, 0);
             };
             
