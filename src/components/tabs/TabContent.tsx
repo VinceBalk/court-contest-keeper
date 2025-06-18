@@ -67,7 +67,6 @@ const TabContent = ({
           <PlayerManagement 
             players={players} 
             setPlayers={setPlayers}
-            matches={activeTournamentMatches}
           />
         </TabsContent>
       )}

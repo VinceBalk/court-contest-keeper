@@ -207,7 +207,6 @@ const TournamentView = () => {
             <PlayerManagement 
               players={players} 
               setPlayers={handleSetPlayers}
-              matches={tournamentMatches}
             />
           </TabsContent>
 

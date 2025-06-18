@@ -15,6 +15,20 @@ interface MatchDisplayProps {
 const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayProps) => {
   const groupMatches = matches.filter(m => (m.group || 'top') === group);
 
+  const getSpecialCount = (specialPoints: { [playerId: string]: number | { [specialType: string]: number } } | undefined): number => {
+    if (!specialPoints || typeof specialPoints !== 'object') return 0;
+    return Object.values(specialPoints).reduce((total, playerSpecials) => {
+      if (typeof playerSpecials === 'number') {
+        return total + playerSpecials;
+      } else if (typeof playerSpecials === 'object' && playerSpecials) {
+        return total + Object.values(playerSpecials).reduce((sum, count) => {
+          return sum + (typeof count === 'number' ? count : 0);
+        }, 0);
+      }
+      return total;
+    }, 0);
+  };
+
   return (
     <Card className={`${
       group === 'top' 
@@ -34,22 +48,6 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
           {groupMatches.map((match) => {
             const team1Players = match.team1.map(id => players.find(p => p.id === id)?.name).join(" & ");
             const team2Players = match.team2.map(id => players.find(p => p.id === id)?.name).join(" & ");
-            
-            // Calculate total special points for display with proper type safety
-            const getSpecialCount = (specialPoints: { [playerId: string]: number | { [specialType: string]: number } } | undefined): number => {
-              if (!specialPoints || typeof specialPoints !== 'object') return 0;
-              return Object.values(specialPoints).reduce((total, playerSpecials) => {
-                if (typeof playerSpecials === 'number') {
-                  return total + playerSpecials;
-                } else if (typeof playerSpecials === 'object' && playerSpecials) {
-                  return total + Object.values(playerSpecials).reduce((sum, count) => {
-                    return sum + (typeof count === 'number' ? count : 0);
-                  }, 0);
-                }
-                return total;
-              }, 0);
-            };
-            
             const specialCount = getSpecialCount(match.specialPoints);
             
             return (

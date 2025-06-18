@@ -5,19 +5,35 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Trophy, Target, Edit } from "lucide-react";
-import { Player, Match } from "./Index";
+import { Player, Match, Tournament } from "./Index";
 import { useToast } from "@/hooks/use-toast";
 import ScoreEntry from "@/components/ScoreEntry";
 import { SpecialType } from "@/components/SpecialManagement";
 
-const RoundView = () => {
+interface RoundViewProps {
+  players?: Player[];
+  matches?: Match[];
+  setMatches?: (matches: Match[]) => void;
+  setPlayers?: (players: Player[]) => void;
+  activeTournament?: Tournament | null;
+  specialTypes?: SpecialType[];
+}
+
+const RoundView = ({ 
+  players: propPlayers, 
+  matches: propMatches, 
+  setMatches: propSetMatches, 
+  setPlayers: propSetPlayers,
+  activeTournament: propActiveTournament,
+  specialTypes: propSpecialTypes 
+}: RoundViewProps = {}) => {
   const { round } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
   // Mock data - in a real app, this would come from your state management
-  const [players] = useState<Player[]>([
+  const [players] = useState<Player[]>(propPlayers || [
     {
       id: "p1",
       name: "John Doe",
@@ -41,7 +57,7 @@ const RoundView = () => {
     // Add more mock players as needed
   ]);
 
-  const [matches, setMatches] = useState<Match[]>([
+  const [matches, setMatches] = useState<Match[]>(propMatches || [
     {
       id: "m1",
       court: 1,
@@ -57,7 +73,7 @@ const RoundView = () => {
     // Add more mock matches as needed
   ]);
 
-  const [specialTypes] = useState<SpecialType[]>([
+  const [specialTypes] = useState<SpecialType[]>(propSpecialTypes || [
     { id: "1", name: "Ace", isActive: true, description: "Service ace" },
     { id: "2", name: "Winner", isActive: true, description: "Winning shot" },
   ]);
@@ -85,7 +101,9 @@ const RoundView = () => {
       completed: true
     };
 
-    setMatches(matches.map(m => m.id === match.id ? updatedMatch : m));
+    const newMatches = matches.map(m => m.id === match.id ? updatedMatch : m);
+    setMatches(newMatches);
+    if (propSetMatches) propSetMatches(newMatches);
     setSelectedMatch(null);
 
     toast({

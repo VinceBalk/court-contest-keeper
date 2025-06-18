@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { UserPlus, Users, Edit, Trash2, Mail, Phone, Trophy } from "lucide-react";
-import { Player } from "@/pages/Index";
+import { Player, Match } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/contexts/TranslationContext";
 import PlayerDetailView from "./PlayerDetailView";
@@ -13,6 +14,7 @@ import PlayerDetailView from "./PlayerDetailView";
 interface PlayerManagementProps {
   players: Player[];
   setPlayers: (players: Player[]) => void;
+  matches?: Match[];
 }
 
 const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
@@ -287,7 +289,9 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
         <PlayerDetailView
           player={selectedPlayer}
           players={players}
-          setPlayers={setPlayers}
+          onUpdatePlayer={(updatedPlayer) => {
+            setPlayers(players.map(p => p.id === updatedPlayer.id ? updatedPlayer : p));
+          }}
           onClose={() => setSelectedPlayer(null)}
         />
       )}
