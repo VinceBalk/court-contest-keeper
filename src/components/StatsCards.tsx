@@ -1,9 +1,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Trophy, Target, Calendar, Settings } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Users, Trophy, Zap, Settings, Target, Clock } from "lucide-react";
 import { useT } from "@/contexts/TranslationContext";
 import { Player, Tournament } from "@/pages/Index";
 import { SpecialType } from "./SpecialManagement";
+import { useRole } from "@/contexts/RoleContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 
 interface StatsCardsProps {
   players: Player[];
@@ -14,94 +17,117 @@ interface StatsCardsProps {
   onStatsCardClick: (cardType: string) => void;
 }
 
-const StatsCards = ({
-  players,
-  activeTournament,
-  currentRound,
-  specialTypes,
-  tournaments,
-  onStatsCardClick
+const StatsCards = ({ 
+  players, 
+  activeTournament, 
+  currentRound, 
+  specialTypes, 
+  tournaments, 
+  onStatsCardClick 
 }: StatsCardsProps) => {
   const { t } = useT();
+  const { userRoles } = useRole();
+  const permissions = useRolePermissions(userRoles);
 
-  const activePlayers = players.filter(p => p.isActive).length;
-  const activeSpecials = specialTypes.filter(s => s.isActive).length;
-  const upcomingTournament = tournaments.find(t => !t.isActive && !t.completed);
+  const activePlayers = players.filter(p => p.isActive);
+  const totalSpecials = specialTypes.filter(s => s.isActive).length;
+
+  const statsCards = [
+    {
+      title: t('stats.totalPlayers'),
+      value: players.length,
+      icon: Users,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+      clickType: "totalPlayers",
+      show: permissions.canManagePlayers
+    },
+    {
+      title: t('stats.activePlayers'),
+      value: activePlayers.length,
+      icon: Target,
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+      clickType: "activePlayers",
+      show: permissions.canManagePlayers
+    },
+    {
+      title: t('stats.tournaments'),
+      value: tournaments.length,
+      icon: Trophy,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-50",
+      clickType: "tournaments",
+      show: permissions.canManageTournaments
+    },
+    {
+      title: t('stats.currentRound'),
+      value: activeTournament ? currentRound : 0,
+      icon: Clock,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+      clickType: "matches",
+      show: permissions.canViewMatches
+    },
+    {
+      title: t('stats.specialTypes'),
+      value: totalSpecials,
+      icon: Zap,
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+      clickType: "specials",
+      show: permissions.canManageSpecials
+    },
+    {
+      title: t('stats.settings'),
+      value: "Config",
+      icon: Settings,
+      color: "text-gray-600",
+      bgColor: "bg-gray-50",
+      clickType: "settings",
+      show: permissions.canManageSettings,
+      isConfig: true
+    }
+  ];
+
+  const visibleCards = statsCards.filter(card => card.show);
+
+  if (visibleCards.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-      <Card className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onStatsCardClick('totalPlayers')}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-custom-lg font-medium">{t('general.totalPlayers')}</CardTitle>
-          <Users className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-blue-600">{players.length}</div>
-          <p className="text-custom-sm text-gray-600 mt-1">
-            {activePlayers} {t('player.active')} • {players.length - activePlayers} {t('player.total')}
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onStatsCardClick('specials')}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-custom-lg font-medium">{t('general.specials')}</CardTitle>
-          <Target className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">{activeSpecials}</div>
-          <p className="text-custom-sm text-gray-600 mt-1">
-            {t('general.activeSpecials')}
-          </p>
-        </CardContent>
-      </Card>
-
-      {activeTournament ? (
-        <Card className="bg-white/90 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-custom-lg font-medium">{t('general.currentRound')}</CardTitle>
-            <Trophy className="h-4 w-4 text-yellow-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{currentRound}</div>
-            <p className="text-custom-sm text-gray-600 mt-1">
-              {activeTournament.name}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="bg-white/90 backdrop-blur-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-custom-lg font-medium">{upcomingTournament ? t('tournament.upcoming') : t('tournament.noTournament')}</CardTitle>
-            <Calendar className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            {upcomingTournament ? (
-              <div>
-                <div className="text-custom-lg font-bold text-purple-600">{upcomingTournament.name}</div>
-                <p className="text-custom-sm text-gray-600 mt-1">
-                  {upcomingTournament.maxPlayers - activePlayers} {t('tournament.spots')} {t('tournament.available')}
-                </p>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+      {visibleCards.map((card, index) => {
+        const IconComponent = card.icon;
+        return (
+          <Card 
+            key={index} 
+            className={`${card.bgColor} border-0 cursor-pointer hover:shadow-md transition-shadow bg-white/80 backdrop-blur-sm`}
+            onClick={() => onStatsCardClick(card.clickType)}
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
+                {card.title}
+              </CardTitle>
+              <IconComponent className={`h-4 w-4 sm:h-5 sm:w-5 ${card.color}`} />
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="flex items-center justify-between">
+                {card.isConfig ? (
+                  <Badge variant="secondary" className="text-xs">
+                    {card.value}
+                  </Badge>
+                ) : (
+                  <div className={`text-xl sm:text-2xl font-bold ${card.color}`}>
+                    {card.value}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="text-custom-lg font-bold text-gray-400">-</div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      <Card className="bg-white/90 backdrop-blur-sm hover:shadow-lg transition-shadow cursor-pointer" onClick={() => onStatsCardClick('settings')}>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-custom-lg font-medium">Settings</CardTitle>
-          <Settings className="h-4 w-4 text-gray-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-gray-600">{tournaments.length}</div>
-          <p className="text-custom-sm text-gray-600 mt-1">
-            Tournaments created
-          </p>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };

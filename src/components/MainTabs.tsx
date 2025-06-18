@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { useT } from "@/contexts/TranslationContext";
+import { useRole } from "@/contexts/RoleContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 import { Player, Tournament, Match } from "@/pages/Index";
 import { SpecialType } from "@/components/SpecialManagement";
 import PlayerManagement from "./PlayerManagement";
@@ -49,25 +51,86 @@ const MainTabs = ({
   setSpecialTypes
 }: MainTabsProps) => {
   const { t } = useT();
+  const { userRoles } = useRole();
+  const permissions = useRolePermissions(userRoles);
 
   const activeTournamentMatches = matches.filter(m => m.tournamentId === activeTournament?.id);
 
-  const tabs = [
-    { value: "tournaments", label: t('nav.tournaments'), shortLabel: "Tours", color: "orange" },
-    { value: "players", label: t('nav.players'), shortLabel: "Players", color: "blue" },
-    { value: "users", label: "User", shortLabel: "User", color: "cyan" },
-    { value: "specials", label: t('nav.specials'), shortLabel: "Special", color: "purple" },
-    { value: "matches", label: t('nav.matches'), shortLabel: "Match", color: "green" },
-    { value: "rankings", label: t('nav.rankings'), shortLabel: "Rank", color: "yellow" },
-    { value: "translations", label: t('nav.translations'), shortLabel: "Lang", color: "pink" },
-    { value: "settings", label: t('nav.settings'), shortLabel: "Set", color: "gray" }
+  // Define all possible tabs with their permission requirements
+  const allTabs = [
+    { 
+      value: "tournaments", 
+      label: t('nav.tournaments'), 
+      shortLabel: "Tours", 
+      color: "orange",
+      show: permissions.canManageTournaments
+    },
+    { 
+      value: "players", 
+      label: t('nav.players'), 
+      shortLabel: "Players", 
+      color: "blue",
+      show: permissions.canManagePlayers
+    },
+    { 
+      value: "users", 
+      label: "User", 
+      shortLabel: "User", 
+      color: "cyan",
+      show: permissions.canManageUsers
+    },
+    { 
+      value: "specials", 
+      label: t('nav.specials'), 
+      shortLabel: "Special", 
+      color: "purple",
+      show: permissions.canManageSpecials
+    },
+    { 
+      value: "matches", 
+      label: t('nav.matches'), 
+      shortLabel: "Match", 
+      color: "green",
+      show: permissions.canViewMatches
+    },
+    { 
+      value: "rankings", 
+      label: t('nav.rankings'), 
+      shortLabel: "Rank", 
+      color: "yellow",
+      show: permissions.canViewRankings
+    },
+    { 
+      value: "translations", 
+      label: t('nav.translations'), 
+      shortLabel: "Lang", 
+      color: "pink",
+      show: permissions.canManageTranslations
+    },
+    { 
+      value: "settings", 
+      label: t('nav.settings'), 
+      shortLabel: "Set", 
+      color: "gray",
+      show: permissions.canManageSettings
+    }
   ];
+
+  // Filter tabs based on user permissions
+  const visibleTabs = allTabs.filter(tab => tab.show);
+
+  // If current active tab is not visible, switch to first visible tab
+  React.useEffect(() => {
+    if (!visibleTabs.find(tab => tab.value === activeTab) && visibleTabs.length > 0) {
+      setActiveTab(visibleTabs[0].value);
+    }
+  }, [activeTab, visibleTabs, setActiveTab]);
 
   const getActiveColor = (color: string) => {
     return `data-[state=active]:bg-${color}-100`;
   };
 
-  const TabButton = ({ tab }: { tab: typeof tabs[0] }) => (
+  const TabButton = ({ tab }: { tab: typeof visibleTabs[0] }) => (
     <TabsTrigger 
       value={tab.value} 
       className={`${getActiveColor(tab.color)} text-xs sm:text-sm px-2 py-2`}
@@ -81,8 +144,8 @@ const MainTabs = ({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
       {/* Desktop Navigation */}
       <div className="hidden sm:block">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 bg-white/80 backdrop-blur-sm gap-1 h-auto p-1">
-          {tabs.map((tab) => (
+        <TabsList className={`grid w-full bg-white/80 backdrop-blur-sm gap-1 h-auto p-1`} style={{gridTemplateColumns: `repeat(${visibleTabs.length}, minmax(0, 1fr))`}}>
+          {visibleTabs.map((tab) => (
             <TabButton key={tab.value} tab={tab} />
           ))}
         </TabsList>
@@ -100,7 +163,7 @@ const MainTabs = ({
             </SheetTrigger>
             <SheetContent side="left" className="w-64 bg-white">
               <div className="flex flex-col space-y-2 mt-6">
-                {tabs.map((tab) => (
+                {visibleTabs.map((tab) => (
                   <Button
                     key={tab.value}
                     variant={activeTab === tab.value ? "default" : "ghost"}
@@ -116,71 +179,88 @@ const MainTabs = ({
           
           {/* Current tab indicator */}
           <div className="bg-white/80 backdrop-blur-sm px-3 py-2 rounded-md text-sm font-medium">
-            {tabs.find(tab => tab.value === activeTab)?.label}
+            {visibleTabs.find(tab => tab.value === activeTab)?.label}
           </div>
         </div>
       </div>
 
-      <TabsContent value="tournaments">
-        <TournamentManagement 
-          tournaments={tournaments}
-          setTournaments={setTournaments}
-          activeTournament={activeTournament}
-          setActiveTournament={setActiveTournament}
-          setCurrentRound={setCurrentRound}
-          players={players}
-          setPlayers={setPlayers}
-        />
-      </TabsContent>
+      {/* Tab Contents - only render if user has permission */}
+      {permissions.canManageTournaments && (
+        <TabsContent value="tournaments">
+          <TournamentManagement 
+            tournaments={tournaments}
+            setTournaments={setTournaments}
+            activeTournament={activeTournament}
+            setActiveTournament={setActiveTournament}
+            setCurrentRound={setCurrentRound}
+            players={players}
+            setPlayers={setPlayers}
+          />
+        </TabsContent>
+      )}
 
-      <TabsContent value="players">
-        <PlayerManagement 
-          players={players} 
-          setPlayers={setPlayers}
-          matches={activeTournamentMatches}
-        />
-      </TabsContent>
+      {permissions.canManagePlayers && (
+        <TabsContent value="players">
+          <PlayerManagement 
+            players={players} 
+            setPlayers={setPlayers}
+            matches={activeTournamentMatches}
+          />
+        </TabsContent>
+      )}
 
-      <TabsContent value="users">
-        <UserManagement />
-      </TabsContent>
+      {permissions.canManageUsers && (
+        <TabsContent value="users">
+          <UserManagement />
+        </TabsContent>
+      )}
 
-      <TabsContent value="specials">
-        <SpecialManagement 
-          specialTypes={specialTypes}
-          setSpecialTypes={setSpecialTypes}
-        />
-      </TabsContent>
+      {permissions.canManageSpecials && (
+        <TabsContent value="specials">
+          <SpecialManagement 
+            specialTypes={specialTypes}
+            setSpecialTypes={setSpecialTypes}
+          />
+        </TabsContent>
+      )}
 
-      <TabsContent value="matches">
-        <TournamentSchedule 
-          players={players}
-          matches={activeTournamentMatches}
-          setMatches={setMatches}
-          currentRound={currentRound}
-          setCurrentRound={setCurrentRound}
-          setPlayers={setPlayers}
-          activeTournament={activeTournament}
-          specialTypes={specialTypes}
-        />
-      </TabsContent>
+      {permissions.canViewMatches && (
+        <TabsContent value="matches">
+          <TournamentSchedule 
+            players={players}
+            matches={activeTournamentMatches}
+            setMatches={setMatches}
+            currentRound={currentRound}
+            setCurrentRound={setCurrentRound}
+            setPlayers={setPlayers}
+            activeTournament={activeTournament}
+            specialTypes={specialTypes}
+          />
+        </TabsContent>
+      )}
 
-      <TabsContent value="rankings">
-        <Rankings 
-          players={players}
-          matches={activeTournamentMatches}
-          currentRound={currentRound}
-          activeTournament={activeTournament}
-        />
-      </TabsContent>
+      {permissions.canViewRankings && (
+        <TabsContent value="rankings">
+          <Rankings 
+            players={players}
+            matches={activeTournamentMatches}
+            currentRound={currentRound}
+            activeTournament={activeTournament}
+          />
+        </TabsContent>
+      )}
 
-      <TabsContent value="translations">
-        <TranslationManagement />
-      </TabsContent>
+      {permissions.canManageTranslations && (
+        <TabsContent value="translations">
+          <TranslationManagement />
+        </TabsContent>
+      )}
 
-      <TabsContent value="settings">
-        <SettingsManagement />
-      </TabsContent>
+      {permissions.canManageSettings && (
+        <TabsContent value="settings">
+          <SettingsManagement />
+        </TabsContent>
+      )}
     </Tabs>
   );
 };
