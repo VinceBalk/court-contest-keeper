@@ -1,45 +1,20 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext } from 'react';
+import { useTranslations, Language } from '@/hooks/useTranslations';
 
 interface TranslationContextType {
-  language: string;
-  setLanguage: (lang: string) => void;
+  language: Language;
+  changeLanguage: (lang: Language) => void;
   t: (key: string) => string;
 }
 
 const TranslationContext = createContext<TranslationContextType | undefined>(undefined);
 
-// Default translations
-const translations = {
-  en: {
-    'nav.tournaments': 'Tournaments',
-    'nav.players': 'Players',
-    'nav.users': 'Users',
-    'nav.specials': 'Specials',
-    'nav.matches': 'Matches',
-    'nav.rankings': 'Rankings',
-    'nav.translations': 'Translations',
-    'nav.settings': 'Settings',
-    'stats.totalPlayers': 'Total Players',
-    'stats.activePlayers': 'Active Players',
-    'stats.tournaments': 'Tournaments',
-    'stats.currentRound': 'Current Round',
-    'stats.specialTypes': 'Special Types',
-    'stats.settings': 'Settings',
-    'header.title': 'Court Contest Keeper',
-    'header.subtitle': 'Tournament Management System'
-  }
-};
-
 export const TranslationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguage] = useState('en');
-
-  const t = (key: string): string => {
-    return translations[language as keyof typeof translations]?.[key as keyof typeof translations.en] || key;
-  };
+  const { language, changeLanguage, t } = useTranslations();
 
   return (
-    <TranslationContext.Provider value={{ language, setLanguage, t }}>
+    <TranslationContext.Provider value={{ language, changeLanguage, t }}>
       {children}
     </TranslationContext.Provider>
   );

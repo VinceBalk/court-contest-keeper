@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) => {
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
   const { userRoles, loading: roleLoading } = useRole();
   const permissions = useRolePermissions(userRoles);
 
@@ -25,12 +25,16 @@ const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) =
     );
   }
 
+  // Redirect to auth if not authenticated
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   // Check if user has required permission
   if (requiredPermission && !permissions[requiredPermission]) {
     return <Navigate to="/" replace />;
   }
 
-  // Authentication disabled - always allow access if permission check passes
   return <>{children}</>;
 };
 
