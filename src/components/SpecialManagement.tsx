@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Target, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/contexts/TranslationContext";
 
 export interface SpecialType {
   id: string;
@@ -26,12 +27,13 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const { toast } = useToast();
+  const { t } = useT();
 
   const createSpecial = () => {
     if (!newSpecialName.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a special name",
+        title: t('general.error'),
+        description: t('special.name.required'),
         variant: "destructive"
       });
       return;
@@ -49,8 +51,8 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
     setNewSpecialDescription("");
     
     toast({
-      title: "Special Created",
-      description: `${newSpecial.name} has been created`,
+      title: t('special.created'),
+      description: `${newSpecial.name} ${t('special.createdDescription')}`,
     });
   };
 
@@ -63,8 +65,8 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
   const saveEdit = () => {
     if (!editName.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a special name",
+        title: t('general.error'),
+        description: t('special.name.required'),
         variant: "destructive"
       });
       return;
@@ -82,8 +84,8 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
     setEditDescription("");
     
     toast({
-      title: "Special Updated",
-      description: "Special has been updated",
+      title: t('special.updated'),
+      description: t('special.updatedDescription'),
     });
   };
 
@@ -105,8 +107,8 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
     setSpecialTypes(specialTypes.filter(s => s.id !== specialId));
     
     toast({
-      title: "Special Deleted",
-      description: `${special?.name} has been deleted`,
+      title: t('special.deleted'),
+      description: `${special?.name} ${t('special.deletedDescription')}`,
     });
   };
 
@@ -116,26 +118,26 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5 text-green-600" />
-            Create New Special Type
+            {t('special.create.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                placeholder="Special name (e.g., Ace, Winner)"
+                placeholder={t('special.name.placeholder')}
                 value={newSpecialName}
                 onChange={(e) => setNewSpecialName(e.target.value)}
               />
               <Input
-                placeholder="Description (optional)"
+                placeholder={t('special.description.placeholder')}
                 value={newSpecialDescription}
                 onChange={(e) => setNewSpecialDescription(e.target.value)}
               />
             </div>
             <Button onClick={createSpecial} className="bg-green-600 hover:bg-green-700">
               <Plus className="h-4 w-4 mr-2" />
-              Create Special
+              {t('special.create')}
             </Button>
           </div>
         </CardContent>
@@ -151,13 +153,13 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                     <Input
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      placeholder="Special name"
+                      placeholder={t('special.name.placeholder')}
                       className="text-sm"
                     />
                     <Input
                       value={editDescription}
                       onChange={(e) => setEditDescription(e.target.value)}
-                      placeholder="Description"
+                      placeholder={t('special.description.placeholder')}
                       className="text-sm"
                     />
                   </div>
@@ -173,7 +175,7 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                   </div>
                 )}
                 <Badge variant={special.isActive ? "default" : "outline"}>
-                  {special.isActive ? "Active" : "Inactive"}
+                  {special.isActive ? t('special.active') : t('special.inactive')}
                 </Badge>
               </div>
             </CardHeader>
@@ -182,10 +184,10 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                 {editingId === special.id ? (
                   <>
                     <Button size="sm" onClick={saveEdit} className="bg-green-600 hover:bg-green-700">
-                      Save
+                      {t('special.save')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={cancelEdit}>
-                      Cancel
+                      {t('special.cancel')}
                     </Button>
                   </>
                 ) : (
@@ -197,7 +199,7 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                       className="text-blue-600 hover:text-blue-700"
                     >
                       <Edit className="h-4 w-4 mr-1" />
-                      Edit
+                      {t('special.edit')}
                     </Button>
                     <Button
                       size="sm"
@@ -205,7 +207,7 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                       onClick={() => toggleSpecialStatus(special.id)}
                       className={special.isActive ? "text-orange-600 hover:text-orange-700" : "text-green-600 hover:text-green-700"}
                     >
-                      {special.isActive ? "Deactivate" : "Activate"}
+                      {special.isActive ? t('special.deactivate') : t('special.activate')}
                     </Button>
                     <Button
                       size="sm"
@@ -226,8 +228,8 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
           <Card className="bg-white/90 backdrop-blur-sm col-span-full">
             <CardContent className="text-center py-12">
               <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No special types created yet</p>
-              <p className="text-gray-400 text-sm">Create your first special type to get started</p>
+              <p className="text-gray-500 text-lg">{t('special.noSpecials')}</p>
+              <p className="text-gray-400 text-sm">{t('special.getStarted')}</p>
             </CardContent>
           </Card>
         )}
