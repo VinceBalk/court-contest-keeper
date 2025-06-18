@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,17 +11,27 @@ import { useToast } from "@/hooks/use-toast";
 interface ScoreEntryProps {
   match: Match;
   players: Player[];
-  specialTypes: SpecialType[];
-  onSubmitScore: (
+  specialTypes?: SpecialType[];
+  onSubmitScore?: (
     match: Match, 
     team1Score: number, 
     team2Score: number, 
     specialPoints: { [playerId: string]: { [specialType: string]: number } }
   ) => void;
-  onCancel: () => void;
+  onSave?: (updatedMatch: Match) => void;
+  onClose?: () => void;
+  onCancel?: () => void;
 }
 
-const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: ScoreEntryProps) => {
+const ScoreEntry = ({ 
+  match, 
+  players, 
+  specialTypes = [], 
+  onSubmitScore, 
+  onSave, 
+  onClose, 
+  onCancel 
+}: ScoreEntryProps) => {
   const [team1Score, setTeam1Score] = useState(match.team1Score || 0);
   const [team2Score, setTeam2Score] = useState(match.team2Score || 8);
   const [specialPoints, setSpecialPoints] = useState<{ [playerId: string]: { [specialType: string]: number } }>(() => {
@@ -63,7 +72,30 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
       return;
     }
 
-    onSubmitScore(match, team1Score, team2Score, specialPoints);
+    const updatedMatch: Match = {
+      ...match,
+      team1Score,
+      team2Score,
+      completed: true,
+      specialPoints: specialPoints
+    };
+
+    if (onSubmitScore) {
+      onSubmitScore(match, team1Score, team2Score, specialPoints);
+    }
+    
+    if (onSave) {
+      onSave(updatedMatch);
+    }
+  };
+
+  const handleCancel = () => {
+    if (onClose) {
+      onClose();
+    }
+    if (onCancel) {
+      onCancel();
+    }
   };
 
   const addSpecialPoint = (playerId: string, specialType: string) => {
@@ -196,7 +228,7 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
           <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 flex-1">
             {match.completed ? 'Update Score' : 'Submit Score'}
           </Button>
-          <Button variant="outline" onClick={onCancel} className="flex-1">
+          <Button variant="outline" onClick={handleCancel} className="flex-1">
             Cancel
           </Button>
         </div>
