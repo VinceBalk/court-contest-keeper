@@ -38,11 +38,11 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
             // Calculate total special points for display with proper type safety
             const getSpecialCount = (specialPoints: { [playerId: string]: number | { [specialType: string]: number } } | undefined): number => {
               if (!specialPoints || typeof specialPoints !== 'object') return 0;
-              return Object.values(specialPoints).reduce((total: number, playerSpecials: unknown) => {
+              return Object.values(specialPoints).reduce((total: number, playerSpecials: number | { [specialType: string]: number }) => {
                 if (typeof playerSpecials === 'number') {
                   return total + playerSpecials;
                 } else if (typeof playerSpecials === 'object' && playerSpecials) {
-                  return total + Object.values(playerSpecials as { [key: string]: number }).reduce((sum, count) => sum + count, 0);
+                  return total + Object.values(playerSpecials).reduce((sum, count) => sum + (typeof count === 'number' ? count : 0), 0);
                 }
                 return total;
               }, 0);
