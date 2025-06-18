@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,10 +34,10 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
   const { toast } = useToast();
 
   const addPlayer = () => {
-    if (!newPlayer.firstName.trim() || !newPlayer.surname.trim()) {
+    if (!newPlayer.firstName.trim()) {
       toast({
         title: "Error",
-        description: "First name and surname are required",
+        description: "First name is required",
         variant: "destructive"
       });
       return;
@@ -166,10 +167,10 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
   };
 
   const saveEdit = () => {
-    if (!editingData.firstName.trim() || !editingData.surname.trim()) {
+    if (!editingData.firstName.trim()) {
       toast({
         title: "Error",
-        description: "First name and surname are required",
+        description: "First name is required",
         variant: "destructive"
       });
       return;
@@ -402,10 +403,10 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                 />
               </div>
               <div>
-                <Label htmlFor="surname">Surname *</Label>
+                <Label htmlFor="surname">Surname</Label>
                 <Input
                   id="surname"
-                  placeholder="Surname"
+                  placeholder="Surname (optional)"
                   value={newPlayer.surname}
                   onChange={(e) => setNewPlayer(prev => ({ ...prev, surname: e.target.value }))}
                   onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
