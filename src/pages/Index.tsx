@@ -6,6 +6,7 @@ import TournamentSchedule from "@/components/TournamentSchedule";
 import Rankings from "@/components/Rankings";
 import TournamentManagement from "@/components/TournamentManagement";
 import SpecialManagement, { SpecialType } from "@/components/SpecialManagement";
+import RoundNavigation from "@/components/RoundNavigation";
 import { Trophy, Users, Calendar, Target, Star } from "lucide-react";
 
 export interface Player {
@@ -162,6 +163,16 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+
+        {activeTournament && (
+          <div className="mb-8">
+            <RoundNavigation 
+              matches={activeTournamentMatches}
+              activeTournament={activeTournament}
+              currentRound={currentRound}
+            />
+          </div>
+        )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm">
