@@ -12,7 +12,7 @@ import { useCreateSpecial, useUpdateSpecial } from "@/hooks/useSpecials";
 export interface SpecialType {
   id: string;
   name: string;
-  description?: string;
+  description: string;
   isActive: boolean;
 }
 
@@ -45,7 +45,7 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
 
     const newSpecial = {
       name: newSpecialName.trim(),
-      description: newSpecialDescription.trim() || undefined,
+      description: newSpecialDescription.trim() || '',
       isActive: true
     };
 
@@ -92,7 +92,7 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
     const updatedSpecial = {
       ...special,
       name: editName.trim(),
-      description: editDescription.trim() || undefined
+      description: editDescription.trim() || ''
     };
 
     updateSpecialMutation.mutate(updatedSpecial, {
@@ -174,10 +174,10 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
             <Button 
               onClick={createSpecial} 
               className="bg-green-600 hover:bg-green-700"
-              disabled={createSpecialMutation.isLoading}
+              disabled={createSpecialMutation.isPending}
             >
               <Plus className="h-4 w-4 mr-2" />
-              {createSpecialMutation.isLoading ? 'Creating...' : t('special.create')}
+              {createSpecialMutation.isPending ? 'Creating...' : t('special.create')}
             </Button>
           </div>
         </CardContent>
@@ -227,9 +227,9 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                       size="sm" 
                       onClick={saveEdit} 
                       className="bg-green-600 hover:bg-green-700"
-                      disabled={updateSpecialMutation.isLoading}
+                      disabled={updateSpecialMutation.isPending}
                     >
-                      {updateSpecialMutation.isLoading ? 'Saving...' : t('special.save')}
+                      {updateSpecialMutation.isPending ? 'Saving...' : t('special.save')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={cancelEdit}>
                       {t('special.cancel')}
@@ -251,7 +251,7 @@ const SpecialManagement = ({ specialTypes, setSpecialTypes }: SpecialManagementP
                       variant="outline"
                       onClick={() => toggleSpecialStatus(special)}
                       className={special.isActive ? "text-orange-600 hover:text-orange-700" : "text-green-600 hover:text-green-700"}
-                      disabled={updateSpecialMutation.isLoading}
+                      disabled={updateSpecialMutation.isPending}
                     >
                       {special.isActive ? t('special.deactivate') : t('special.activate')}
                     </Button>

@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Users } from "lucide-react";
-import { Tournament } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/contexts/TranslationContext";
+import { useCreateTournament } from "@/hooks/useTournaments";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/dialog";
 
 interface TournamentFormProps {
-  tournaments: (Tournament & { isActive?: boolean; completed?: boolean; })[];
-  setTournaments: (tournaments: (Tournament & { isActive?: boolean; completed?: boolean; })[]) => void;
+  tournaments: any[];
+  setTournaments: (tournaments: any[]) => void;
 }
 
 const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) => {
@@ -29,6 +29,8 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
   const [newTournamentMaxPlayers, setNewTournamentMaxPlayers] = useState(16);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { toast } = useToast();
+  
+  const createTournamentMutation = useCreateTournament();
 
   const handleStartDateChange = (date: string) => {
     setNewTournamentStartDate(date);
@@ -74,30 +76,38 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
   };
 
   const confirmCreateTournament = () => {
-    const newTournament: Tournament & { isActive: boolean; completed: boolean; } = {
-      id: `tournament-${Date.now()}`,
+    const newTournament = {
       name: newTournamentName.trim(),
       description: '',
-      status: 'draft',
+      status: 'draft' as const,
       startDate: newTournamentStartDate,
       endDate: newTournamentEndDate || newTournamentStartDate,
       maxPlayers: newTournamentMaxPlayers,
       currentRound: 1,
       totalRounds: 3,
-      isActive: false,
-      completed: false
     };
 
-    setTournaments([...tournaments, newTournament]);
-    setNewTournamentName("");
-    setNewTournamentStartDate("");
-    setNewTournamentEndDate("");
-    setNewTournamentMaxPlayers(16);
-    setShowConfirmDialog(false);
-    
-    toast({
-      title: "Tournament Created",
-      description: `${newTournament.name} has been created with ${newTournament.maxPlayers} players max`,
+    createTournamentMutation.mutate(newTournament, {
+      onSuccess: () => {
+        setNewTournamentName("");
+        setNewTournamentStartDate("");
+        setNewTournamentEndDate("");
+        setNewTournamentMaxPlayers(16);
+        setShowConfirmDialog(false);
+        
+        toast({
+          title: "Tournament Created",
+          description: `${newTournament.name} has been created with ${newTournament.maxPlayers} players max`,
+        });
+      },
+      onError: (error) => {
+        toast({
+          title: t('general.error'),
+          description: "Failed to create tournament",
+          variant: "destructive"
+        });
+        console.error('Error creating tournament:', error);
+      }
     });
   };
 
@@ -172,10 +182,13 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
                 <Button 
                   onClick={handleCreateTournamentClick} 
                   className="bg-green-600 hover:bg-green-700 w-full"
+                  disabled={createTournamentMutation.isPending}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   <span className="sm:hidden">Create</span>
-                  <span className="hidden sm:inline">{t('general.create')}</span>
+                  <span className="hidden sm:inline">
+                    {createTournamentMutation.isPending ? 'Creating...' : t('general.create')}
+                  </span>
                 </Button>
               </div>
             </div>
@@ -214,8 +227,12 @@ const TournamentForm = ({ tournaments, setTournaments }: TournamentFormProps) =>
             <Button variant="outline" onClick={cancelCreateTournament}>
               {t('general.cancel')}
             </Button>
-            <Button onClick={confirmCreateTournament} className="bg-green-600 hover:bg-green-700">
-              {t('general.create')} Tournament
+            <Button 
+              onClick={confirmCreateTournament} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={createTournamentMutation.isPending}
+            >
+              {createTournamentMutation.isPending ? 'Creating...' : `${t('general.create')} Tournament`}
             </Button>
           </DialogFooter>
         </DialogContent>

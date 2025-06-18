@@ -72,7 +72,15 @@ const Index = () => {
   const { data: tournaments = [] } = useTournaments();
   const { data: players = [] } = usePlayers();
   const { data: matches = [] } = useMatches();
-  const { data: specialTypes = [] } = useSpecials();
+  const { data: specialTypesData = [] } = useSpecials();
+
+  // Transform special types to match the expected interface
+  const specialTypes: SpecialType[] = specialTypesData.map(special => ({
+    id: special.id,
+    name: special.name,
+    description: special.description || '',
+    isActive: special.isActive,
+  }));
 
   // Get active tournament
   const activeTournament = tournaments.find(t => t.status === 'active') || null;

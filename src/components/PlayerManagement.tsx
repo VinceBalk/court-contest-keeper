@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -182,12 +181,12 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
               <Button 
                 onClick={handleAddPlayer} 
                 className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={createPlayerMutation.isLoading}
+                disabled={createPlayerMutation.isPending}
               >
                 <UserPlus className="h-4 w-4 mr-2" />
                 <span className="sm:hidden">Add</span>
                 <span className="hidden sm:inline">
-                  {createPlayerMutation.isLoading ? 'Adding...' : t('general.add')}
+                  {createPlayerMutation.isPending ? 'Adding...' : t('general.add')}
                 </span>
               </Button>
             </div>
@@ -243,7 +242,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                       size="sm"
                       onClick={() => handleDeletePlayer(player.id)}
                       className="text-red-600 hover:text-red-700"
-                      disabled={deletePlayerMutation.isLoading}
+                      disabled={deletePlayerMutation.isPending}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -301,7 +300,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
                       size="sm"
                       onClick={() => handleDeletePlayer(player.id)}
                       className="text-red-600 hover:text-red-700"
-                      disabled={deletePlayerMutation.isLoading}
+                      disabled={deletePlayerMutation.isPending}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
