@@ -1,5 +1,4 @@
 
-import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRole } from "@/contexts/RoleContext";
 import { useRolePermissions } from "@/hooks/useRolePermissions";
@@ -9,10 +8,9 @@ interface ProtectedRouteProps {
   requiredPermission?: keyof ReturnType<typeof useRolePermissions>;
 }
 
-const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
-  const { userRoles, loading: roleLoading } = useRole();
-  const permissions = useRolePermissions(userRoles);
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const { loading } = useAuth();
+  const { loading: roleLoading } = useRole();
 
   if (loading || roleLoading) {
     return (
@@ -25,18 +23,7 @@ const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) =
     );
   }
 
-  // For now, allow access without authentication since the database is set up
-  // but authentication is disabled. In the future, uncomment these lines:
-  
-  // if (!user) {
-  //   return <Navigate to="/auth" replace />;
-  // }
-
-  // if (requiredPermission && !permissions[requiredPermission]) {
-  //   return <Navigate to="/" replace />;
-  // }
-
-  // Temporary: Allow all access for development
+  // Authentication completely disabled - allow all access
   return <>{children}</>;
 };
 
