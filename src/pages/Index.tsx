@@ -115,7 +115,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto">
         <MainHeader activeTournament={activeTournament} />
 
@@ -129,7 +129,7 @@ const Index = () => {
         />
 
         {activeTournament && (
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <RoundNavigation 
               matches={activeTournamentMatches}
               activeTournament={activeTournament}

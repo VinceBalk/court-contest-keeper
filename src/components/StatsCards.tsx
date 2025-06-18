@@ -71,18 +71,18 @@ const StatsCards = ({
   const currentRoundContent = getCurrentRoundCardContent();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
       <Card 
         className="bg-white/80 backdrop-blur-sm border-blue-200 cursor-pointer hover:shadow-md transition-shadow"
         onClick={() => onStatsCardClick('activePlayers')}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('general.activePlayers')}</CardTitle>
-          <Users className="h-4 w-4 text-blue-600" />
+          <CardTitle className="text-xs sm:text-sm font-medium">{t('general.activePlayers')}</CardTitle>
+          <Users className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-blue-600">{activePlayers.length}</div>
-          <p className="text-xs text-gray-600">
+          <div className="text-xl sm:text-2xl font-bold text-blue-600">{activePlayers.length}</div>
+          <p className="text-xs text-gray-600 leading-tight">
             {t('player.linkerRijtje')}: {topGroupPlayers.length}/8, {t('player.rechterRijtje')}: {bottomGroupPlayers.length}/8
           </p>
         </CardContent>
@@ -93,27 +93,27 @@ const StatsCards = ({
         onClick={() => onStatsCardClick('totalPlayers')}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('general.totalPlayers')}</CardTitle>
-          <Calendar className="h-4 w-4 text-green-600" />
+          <CardTitle className="text-xs sm:text-sm font-medium">{t('general.totalPlayers')}</CardTitle>
+          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">{players?.length || 0}</div>
+          <div className="text-xl sm:text-2xl font-bold text-green-600">{players?.length || 0}</div>
           <p className="text-xs text-gray-600">
             {t('player.availablePool')}
           </p>
         </CardContent>
       </Card>
 
-      <Card className={`bg-white/80 backdrop-blur-sm ${currentRoundContent.className}`}>
+      <Card className={`bg-white/80 backdrop-blur-sm ${currentRoundContent.className} sm:col-span-2 lg:col-span-1`}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{currentRoundContent.title}</CardTitle>
-          <Target className={`h-4 w-4 ${currentRoundContent.iconColor}`} />
+          <CardTitle className="text-xs sm:text-sm font-medium">{currentRoundContent.title}</CardTitle>
+          <Target className={`h-3 w-3 sm:h-4 sm:w-4 ${currentRoundContent.iconColor}`} />
         </CardHeader>
         <CardContent>
-          <div className={`text-2xl font-bold ${currentRoundContent.valueColor}`}>
+          <div className={`text-lg sm:text-2xl font-bold ${currentRoundContent.valueColor} break-words`}>
             {currentRoundContent.value}
           </div>
-          <p className="text-xs text-gray-600">{currentRoundContent.subtitle}</p>
+          <p className="text-xs text-gray-600 leading-tight">{currentRoundContent.subtitle}</p>
         </CardContent>
       </Card>
 
@@ -122,11 +122,11 @@ const StatsCards = ({
         onClick={() => onStatsCardClick('specials')}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('general.specials')}</CardTitle>
-          <Star className="h-4 w-4 text-orange-600" />
+          <CardTitle className="text-xs sm:text-sm font-medium">{t('general.specials')}</CardTitle>
+          <Star className="h-3 w-3 sm:h-4 sm:w-4 text-orange-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-orange-600">
+          <div className="text-xl sm:text-2xl font-bold text-orange-600">
             {specialTypes?.filter(s => s.isActive).length || 0}
           </div>
           <p className="text-xs text-gray-600">{t('general.activeSpecials')}</p>
@@ -138,11 +138,11 @@ const StatsCards = ({
         onClick={() => onStatsCardClick('settings')}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{t('nav.settings')}</CardTitle>
-          <Settings className="h-4 w-4 text-gray-600" />
+          <CardTitle className="text-xs sm:text-sm font-medium">{t('nav.settings')}</CardTitle>
+          <Settings className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-gray-600">
+          <div className="text-xl sm:text-2xl font-bold text-gray-600">
             ⚙️
           </div>
           <p className="text-xs text-gray-600">Configuration</p>

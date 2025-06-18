@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -12,10 +13,24 @@ export default {
 	theme: {
 		container: {
 			center: true,
-			padding: '2rem',
+			padding: {
+				DEFAULT: '1rem',
+				sm: '2rem',
+				lg: '4rem',
+				xl: '5rem',
+				'2xl': '6rem',
+			},
 			screens: {
 				'2xl': '1400px'
 			}
+		},
+		screens: {
+			'xs': '475px',
+			'sm': '640px',
+			'md': '768px',
+			'lg': '1024px',
+			'xl': '1280px',
+			'2xl': '1536px',
 		},
 		extend: {
 			colors: {
@@ -61,12 +76,67 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom design system colors
+				'custom-primary': {
+					50: 'hsl(var(--color-primary-50))',
+					100: 'hsl(var(--color-primary-100))',
+					500: 'hsl(var(--color-primary-500))',
+					600: 'hsl(var(--color-primary-600))',
+					700: 'hsl(var(--color-primary-700))',
+				},
+				'custom-success': {
+					50: 'hsl(var(--color-success-50))',
+					100: 'hsl(var(--color-success-100))',
+					500: 'hsl(var(--color-success-500))',
+					600: 'hsl(var(--color-success-600))',
+					700: 'hsl(var(--color-success-700))',
+				},
+				'custom-warning': {
+					50: 'hsl(var(--color-warning-50))',
+					100: 'hsl(var(--color-warning-100))',
+					500: 'hsl(var(--color-warning-500))',
+					600: 'hsl(var(--color-warning-600))',
+					700: 'hsl(var(--color-warning-700))',
+				},
+				'custom-error': {
+					50: 'hsl(var(--color-error-50))',
+					100: 'hsl(var(--color-error-100))',
+					500: 'hsl(var(--color-error-500))',
+					600: 'hsl(var(--color-error-600))',
+					700: 'hsl(var(--color-error-700))',
 				}
+			},
+			fontSize: {
+				'custom-xs': 'var(--font-size-xs)',
+				'custom-sm': 'var(--font-size-sm)',
+				'custom-base': 'var(--font-size-base)',
+				'custom-lg': 'var(--font-size-lg)',
+				'custom-xl': 'var(--font-size-xl)',
+				'custom-2xl': 'var(--font-size-2xl)',
+				'custom-3xl': 'var(--font-size-3xl)',
+				'custom-4xl': 'var(--font-size-4xl)',
+				'custom-5xl': 'var(--font-size-5xl)',
+				'custom-6xl': 'var(--font-size-6xl)',
+			},
+			spacing: {
+				'custom-xs': 'var(--spacing-xs)',
+				'custom-sm': 'var(--spacing-sm)',
+				'custom-md': 'var(--spacing-md)',
+				'custom-lg': 'var(--spacing-lg)',
+				'custom-xl': 'var(--spacing-xl)',
+				'custom-2xl': 'var(--spacing-2xl)',
+				'custom-3xl': 'var(--spacing-3xl)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'custom-sm': 'var(--border-radius-sm)',
+				'custom-md': 'var(--border-radius-md)',
+				'custom-lg': 'var(--border-radius-lg)',
+				'custom-xl': 'var(--border-radius-xl)',
+				'custom-2xl': 'var(--border-radius-2xl)',
 			},
 			keyframes: {
 				'accordion-down': {

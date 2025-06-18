@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -37,47 +38,83 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Custom Design System Variables */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+    --font-size-5xl: 3rem;
+    --font-size-6xl: 3.75rem;
+
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    --spacing-3xl: 4rem;
+
+    --border-radius-sm: 0.125rem;
+    --border-radius-md: 0.375rem;
+    --border-radius-lg: 0.5rem;
+    --border-radius-xl: 0.75rem;
+    --border-radius-2xl: 1rem;
+
+    /* Custom Color Variables */
+    --color-primary-50: 239 246 255;
+    --color-primary-100: 219 234 254;
+    --color-primary-500: 59 130 246;
+    --color-primary-600: 37 99 235;
+    --color-primary-700: 29 78 216;
+
+    --color-success-50: 240 253 244;
+    --color-success-100: 220 252 231;
+    --color-success-500: 34 197 94;
+    --color-success-600: 22 163 74;
+    --color-success-700: 21 128 61;
+
+    --color-warning-50: 255 251 235;
+    --color-warning-100: 254 243 199;
+    --color-warning-500: 245 158 11;
+    --color-warning-600: 217 119 6;
+    --color-warning-700: 180 83 9;
+
+    --color-error-50: 254 242 242;
+    --color-error-100: 254 226 226;
+    --color-error-500: 239 68 68;
+    --color-error-600: 220 38 38;
+    --color-error-700: 185 28 28;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -100,4 +137,80 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Responsive Typography Classes */
+  .heading-1 {
+    font-size: var(--font-size-4xl);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .heading-2 {
+    font-size: var(--font-size-3xl);
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  .heading-3 {
+    font-size: var(--font-size-2xl);
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  .heading-4 {
+    font-size: var(--font-size-xl);
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .heading-5 {
+    font-size: var(--font-size-lg);
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .body-large {
+    font-size: var(--font-size-lg);
+    line-height: 1.6;
+  }
+
+  .body-base {
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+  }
+
+  .body-small {
+    font-size: var(--font-size-sm);
+    line-height: 1.5;
+  }
+
+  .caption {
+    font-size: var(--font-size-xs);
+    line-height: 1.4;
+  }
+
+  /* Responsive breakpoints */
+  @media (max-width: 640px) {
+    .heading-1 { font-size: var(--font-size-3xl); }
+    .heading-2 { font-size: var(--font-size-2xl); }
+    .heading-3 { font-size: var(--font-size-xl); }
+  }
+
+  @media (min-width: 1024px) {
+    .heading-1 { font-size: var(--font-size-5xl); }
+    .heading-2 { font-size: var(--font-size-4xl); }
+  }
+}
+
+/* Utility classes for design system */
+@layer utilities {
+  .text-custom-primary { color: hsl(var(--color-primary-500)); }
+  .text-custom-success { color: hsl(var(--color-success-500)); }
+  .text-custom-warning { color: hsl(var(--color-warning-500)); }
+  .text-custom-error { color: hsl(var(--color-error-500)); }
+  
+  .bg-custom-primary { background-color: hsl(var(--color-primary-500)); }
+  .bg-custom-success { background-color: hsl(var(--color-success-500)); }
+  .bg-custom-warning { background-color: hsl(var(--color-warning-500)); }
+  .bg-custom-error { background-color: hsl(var(--color-error-500)); }
 }
