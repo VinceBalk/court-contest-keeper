@@ -1,12 +1,8 @@
 
 import { Tournament } from "@/pages/Index";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useT } from "@/contexts/TranslationContext";
-import { useAuth } from "@/contexts/AuthContext";
 import LanguageSwitcher from "./LanguageSwitcher";
-import { Link } from "react-router-dom";
-import { LogIn, LogOut } from "lucide-react";
 
 interface MainHeaderProps {
   activeTournament: Tournament | null;
@@ -14,33 +10,14 @@ interface MainHeaderProps {
 
 const MainHeader = ({ activeTournament }: MainHeaderProps) => {
   const { t } = useT();
-  const { user, signOut } = useAuth();
 
   return (
     <header className="text-center mb-4 sm:mb-6 lg:mb-8">
-      {/* Top bar with language switcher and auth */}
+      {/* Top bar with language switcher */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex-1" />
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
-          {user ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={signOut}
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </Button>
-          ) : (
-            <Link to="/auth">
-              <Button variant="outline" size="sm" className="flex items-center gap-2">
-                <LogIn className="h-4 w-4" />
-                <span className="hidden sm:inline">Login</span>
-              </Button>
-            </Link>
-          )}
         </div>
       </div>
 
