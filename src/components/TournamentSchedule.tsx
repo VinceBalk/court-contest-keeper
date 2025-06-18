@@ -109,14 +109,20 @@ const TournamentSchedule = ({
     match: Match, 
     team1Score: number, 
     team2Score: number, 
-    specialPoints: { [playerId: string]: number }
+    specialPoints: { [playerId: string]: { count: number; type: string }[] }
   ) => {
+    // Convert new special points structure to number for storage
+    const convertedSpecialPoints: { [playerId: string]: number } = {};
+    Object.entries(specialPoints).forEach(([playerId, specials]) => {
+      convertedSpecialPoints[playerId] = specials.reduce((sum, special) => sum + special.count, 0);
+    });
+
     // Update match
     const updatedMatch = {
       ...match,
       team1Score,
       team2Score,
-      specialPoints,
+      specialPoints: convertedSpecialPoints,
       completed: true
     };
 
@@ -132,16 +138,16 @@ const TournamentSchedule = ({
         return {
           ...player,
           totalGames: player.totalGames + team1Score,
-          totalSpecials: player.totalSpecials + (specialPoints[player.id] || 0),
-          totalPoints: player.totalPoints + team1Score + (specialPoints[player.id] || 0),
+          totalSpecials: player.totalSpecials + (convertedSpecialPoints[player.id] || 0),
+          totalPoints: player.totalPoints + team1Score + (convertedSpecialPoints[player.id] || 0),
           matchesPlayed: player.matchesPlayed + 1
         };
       } else if (team2Players.includes(player.id)) {
         return {
           ...player,
           totalGames: player.totalGames + team2Score,
-          totalSpecials: player.totalSpecials + (specialPoints[player.id] || 0),
-          totalPoints: player.totalPoints + team2Score + (specialPoints[player.id] || 0),
+          totalSpecials: player.totalSpecials + (convertedSpecialPoints[player.id] || 0),
+          totalPoints: player.totalPoints + team2Score + (convertedSpecialPoints[player.id] || 0),
           matchesPlayed: player.matchesPlayed + 1
         };
       }

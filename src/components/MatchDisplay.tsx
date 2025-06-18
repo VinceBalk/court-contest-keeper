@@ -16,9 +16,15 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
   const groupMatches = matches.filter(m => m.group === group);
 
   return (
-    <Card className={`${group === 'top' ? 'bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200' : 'bg-gradient-to-br from-blue-50 to-green-50 border-blue-200'}`}>
+    <Card className={`${
+      group === 'top' 
+        ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-yellow-300' 
+        : 'bg-gradient-to-br from-blue-100 to-green-100 border-blue-300'
+    }`}>
       <CardHeader>
-        <CardTitle className={`flex items-center gap-2 ${group === 'top' ? 'text-yellow-700' : 'text-blue-700'}`}>
+        <CardTitle className={`flex items-center gap-2 ${
+          group === 'top' ? 'text-orange-700' : 'text-blue-700'
+        }`}>
           {group === 'top' ? <Trophy className="h-5 w-5" /> : <Target className="h-5 w-5" />}
           {group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}
         </CardTitle>
@@ -29,8 +35,19 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
             const team1Players = match.team1.map(id => players.find(p => p.id === id)?.name).join(" & ");
             const team2Players = match.team2.map(id => players.find(p => p.id === id)?.name).join(" & ");
             
+            // Calculate total special points for display
+            const getSpecialCount = (specialPoints: any) => {
+              if (!specialPoints || typeof specialPoints !== 'object') return 0;
+              return Object.values(specialPoints).reduce((total: number, playerSpecials: any) => {
+                if (Array.isArray(playerSpecials)) {
+                  return total + playerSpecials.reduce((sum: number, special: any) => sum + (special.count || 0), 0);
+                }
+                return total + (typeof playerSpecials === 'number' ? playerSpecials : 0);
+              }, 0);
+            };
+            
             return (
-              <div key={match.id} className="p-4 bg-white/70 rounded-lg border">
+              <div key={match.id} className="p-4 bg-white/80 rounded-lg border shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="font-medium">Court {match.court}</span>
                   <Badge variant={match.completed ? "default" : "outline"}>
@@ -46,6 +63,11 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
                     <span>{team2Players}</span>
                     <span className="font-bold">{match.team2Score}</span>
                   </div>
+                  {match.completed && getSpecialCount(match.specialPoints) > 0 && (
+                    <div className="text-xs text-gray-600 mt-1">
+                      Special points: {getSpecialCount(match.specialPoints)}
+                    </div>
+                  )}
                 </div>
                 {!match.completed && (
                   <Button
