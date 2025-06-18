@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Player, Match } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 import { useT } from "@/contexts/TranslationContext";
-import { useDeletePlayer } from "@/hooks/usePlayers";
+import { useDeletePlayer, useUpdatePlayer } from "@/hooks/usePlayers";
 import PlayerDetailView from "./PlayerDetailView";
 import PlayerForm from "./PlayerForm";
 import PlayerGroupCard from "./PlayerGroupCard";
@@ -19,6 +19,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const { toast } = useToast();
   const deletePlayerMutation = useDeletePlayer();
+  const updatePlayerMutation = useUpdatePlayer();
 
   const handleDeletePlayer = async (playerId: string) => {
     const playerToDelete = players.find(p => p.id === playerId);
@@ -40,6 +41,26 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
         }
       });
     }
+  };
+
+  const handleUpdatePlayer = (updatedPlayer: Player) => {
+    updatePlayerMutation.mutate(updatedPlayer, {
+      onSuccess: () => {
+        toast({
+          title: 'Player Updated',
+          description: `${updatedPlayer.name} has been updated successfully`,
+        });
+        setSelectedPlayer(null);
+      },
+      onError: (error) => {
+        toast({
+          title: t('general.error'),
+          description: "Failed to update player",
+          variant: "destructive"
+        });
+        console.error('Error updating player:', error);
+      }
+    });
   };
 
   const activePlayers = players.filter(p => p.isActive);
@@ -73,9 +94,7 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           player={selectedPlayer}
           players={players}
           matches={matches}
-          onUpdatePlayer={(updatedPlayer) => {
-            console.log('Player updated:', updatedPlayer);
-          }}
+          onUpdatePlayer={handleUpdatePlayer}
           onClose={() => setSelectedPlayer(null)}
         />
       )}
