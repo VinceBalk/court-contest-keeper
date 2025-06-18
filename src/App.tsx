@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TranslationProvider } from "@/contexts/TranslationContext";
 import Index from "./pages/Index";
+import TournamentView from "./pages/TournamentView";
 import RoundViewWrapper from "./components/RoundViewWrapper";
 import NotFound from "./pages/NotFound";
 
@@ -20,6 +21,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/tournament/:tournamentId" element={<TournamentView />} />
             <Route path="/round/:round" element={<RoundViewWrapper />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

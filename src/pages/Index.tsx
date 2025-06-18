@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,6 +73,36 @@ const Index = () => {
   const activePlayers = players.filter(p => p.isActive);
   const topGroupPlayers = activePlayers.filter(p => p.group === 'top').sort((a, b) => a.name.localeCompare(b.name));
   const bottomGroupPlayers = activePlayers.filter(p => p.group === 'bottom').sort((a, b) => a.name.localeCompare(b.name));
+
+  // Save tournaments to localStorage whenever they change
+  const handleSetTournaments = (newTournaments: Tournament[]) => {
+    setTournaments(newTournaments);
+    localStorage.setItem('tournaments', JSON.stringify(newTournaments));
+  };
+
+  // Save matches to localStorage whenever they change
+  const handleSetMatches = (newMatches: Match[]) => {
+    setMatches(newMatches);
+    localStorage.setItem('tournament-matches', JSON.stringify(newMatches));
+  };
+
+  // Save players to localStorage whenever they change
+  const handleSetPlayers = (newPlayers: Player[]) => {
+    setPlayers(newPlayers);
+    localStorage.setItem('tournament-players', JSON.stringify(newPlayers));
+  };
+
+  // Save special types to localStorage whenever they change
+  const handleSetSpecialTypes = (newSpecialTypes: SpecialType[]) => {
+    setSpecialTypes(newSpecialTypes);
+    localStorage.setItem('special-types', JSON.stringify(newSpecialTypes));
+  };
+
+  // Save active tournament to localStorage whenever it changes
+  const handleSetActiveTournament = (tournament: Tournament | null) => {
+    setActiveTournament(tournament);
+    localStorage.setItem('active-tournament', JSON.stringify(tournament));
+  };
 
   const handleStatsCardClick = (cardType: string) => {
     switch(cardType) {
@@ -211,19 +240,19 @@ const Index = () => {
           <TabsContent value="tournaments">
             <TournamentManagement 
               tournaments={tournaments}
-              setTournaments={setTournaments}
+              setTournaments={handleSetTournaments}
               activeTournament={activeTournament}
-              setActiveTournament={setActiveTournament}
+              setActiveTournament={handleSetActiveTournament}
               setCurrentRound={setCurrentRound}
               players={players}
-              setPlayers={setPlayers}
+              setPlayers={handleSetPlayers}
             />
           </TabsContent>
 
           <TabsContent value="players">
             <PlayerManagement 
               players={players} 
-              setPlayers={setPlayers}
+              setPlayers={handleSetPlayers}
               matches={activeTournamentMatches}
             />
           </TabsContent>
@@ -231,7 +260,7 @@ const Index = () => {
           <TabsContent value="specials">
             <SpecialManagement 
               specialTypes={specialTypes}
-              setSpecialTypes={setSpecialTypes}
+              setSpecialTypes={handleSetSpecialTypes}
             />
           </TabsContent>
 
@@ -239,10 +268,10 @@ const Index = () => {
             <TournamentSchedule 
               players={players}
               matches={activeTournamentMatches}
-              setMatches={setMatches}
+              setMatches={handleSetMatches}
               currentRound={currentRound}
               setCurrentRound={setCurrentRound}
-              setPlayers={setPlayers}
+              setPlayers={handleSetPlayers}
               activeTournament={activeTournament}
               specialTypes={specialTypes}
             />
