@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,8 +7,10 @@ import TournamentSchedule from "@/components/TournamentSchedule";
 import Rankings from "@/components/Rankings";
 import TournamentManagement from "@/components/TournamentManagement";
 import SpecialManagement, { SpecialType } from "@/components/SpecialManagement";
+import TranslationManagement from "@/components/TranslationManagement";
 import RoundNavigation from "@/components/RoundNavigation";
 import { Trophy, Users, Calendar, Target, Star } from "lucide-react";
+import { useT } from "@/contexts/TranslationContext";
 
 export interface Player {
   id: string;
@@ -33,6 +36,7 @@ export interface Tournament {
   date: string;
   isActive: boolean;
   completed: boolean;
+  maxPlayers: number; // Maximum number of players allowed (default 16)
 }
 
 export interface Match {
@@ -50,6 +54,7 @@ export interface Match {
 }
 
 const Index = () => {
+  const { t } = useT();
   const [players, setPlayers] = useState<Player[]>([]);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
@@ -113,7 +118,7 @@ const Index = () => {
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">{activePlayers.length}</div>
               <p className="text-xs text-gray-600">
-                Linker: {topGroupPlayers.length}/8, Rechter: {bottomGroupPlayers.length}/8
+                {t('player.linkerRijtje')}: {topGroupPlayers.length}/8, {t('player.rechterRijtje')}: {bottomGroupPlayers.length}/8
               </p>
             </CardContent>
           </Card>
@@ -175,21 +180,24 @@ const Index = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-6 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="tournaments" className="data-[state=active]:bg-orange-100">
-              Tournaments
+              {t('nav.tournaments')}
             </TabsTrigger>
             <TabsTrigger value="players" className="data-[state=active]:bg-blue-100">
-              Players & Groups
+              {t('nav.players')}
             </TabsTrigger>
             <TabsTrigger value="specials" className="data-[state=active]:bg-purple-100">
-              Special Types
+              {t('nav.specials')}
             </TabsTrigger>
             <TabsTrigger value="matches" className="data-[state=active]:bg-green-100">
-              Matches & Schedule
+              {t('nav.matches')}
             </TabsTrigger>
             <TabsTrigger value="rankings" className="data-[state=active]:bg-yellow-100">
-              Rankings & Stats
+              {t('nav.rankings')}
+            </TabsTrigger>
+            <TabsTrigger value="translations" className="data-[state=active]:bg-pink-100">
+              {t('nav.translations')}
             </TabsTrigger>
           </TabsList>
 
@@ -240,6 +248,10 @@ const Index = () => {
               currentRound={currentRound}
               activeTournament={activeTournament}
             />
+          </TabsContent>
+
+          <TabsContent value="translations">
+            <TranslationManagement />
           </TabsContent>
         </Tabs>
       </div>

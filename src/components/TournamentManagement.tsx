@@ -1,12 +1,19 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Plus, Trophy, Play, Archive, Trash2 } from "lucide-react";
+import { Calendar, Plus, Trophy, Play, Archive, Trash2, Users } from "lucide-react";
 import { Tournament, Player } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface TournamentManagementProps {
   tournaments: Tournament[];
@@ -29,9 +36,11 @@ const TournamentManagement = ({
 }: TournamentManagementProps) => {
   const [newTournamentName, setNewTournamentName] = useState("");
   const [newTournamentDate, setNewTournamentDate] = useState("");
+  const [newTournamentMaxPlayers, setNewTournamentMaxPlayers] = useState(16);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { toast } = useToast();
 
-  const createTournament = () => {
+  const handleCreateTournamentClick = () => {
     if (!newTournamentName.trim() || !newTournamentDate) {
       toast({
         title: "Error",
@@ -41,22 +50,42 @@ const TournamentManagement = ({
       return;
     }
 
+    if (newTournamentMaxPlayers < 4 || newTournamentMaxPlayers % 2 !== 0) {
+      toast({
+        title: "Error",
+        description: "Maximum players must be an even number and at least 4",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setShowConfirmDialog(true);
+  };
+
+  const confirmCreateTournament = () => {
     const newTournament: Tournament = {
       id: `tournament-${Date.now()}`,
       name: newTournamentName.trim(),
       date: newTournamentDate,
       isActive: false,
-      completed: false
+      completed: false,
+      maxPlayers: newTournamentMaxPlayers
     };
 
     setTournaments([...tournaments, newTournament]);
     setNewTournamentName("");
     setNewTournamentDate("");
+    setNewTournamentMaxPlayers(16);
+    setShowConfirmDialog(false);
     
     toast({
       title: "Tournament Created",
-      description: `${newTournament.name} has been created`,
+      description: `${newTournament.name} has been created with ${newTournament.maxPlayers} players max`,
     });
+  };
+
+  const cancelCreateTournament = () => {
+    setShowConfirmDialog(false);
   };
 
   const activateTournament = (tournament: Tournament) => {
@@ -144,23 +173,40 @@ const TournamentManagement = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
-            <Input
-              placeholder="Tournament name"
-              value={newTournamentName}
-              onChange={(e) => setNewTournamentName(e.target.value)}
-              className="flex-1"
-            />
-            <Input
-              type="date"
-              value={newTournamentDate}
-              onChange={(e) => setNewTournamentDate(e.target.value)}
-              className="w-48"
-            />
-            <Button onClick={createTournament} className="bg-green-600 hover:bg-green-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Create
-            </Button>
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <Input
+                placeholder="Tournament name"
+                value={newTournamentName}
+                onChange={(e) => setNewTournamentName(e.target.value)}
+                className="flex-1"
+              />
+              <Input
+                type="date"
+                value={newTournamentDate}
+                onChange={(e) => setNewTournamentDate(e.target.value)}
+                className="w-48"
+              />
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-gray-600" />
+                <Input
+                  type="number"
+                  min="4"
+                  step="2"
+                  value={newTournamentMaxPlayers}
+                  onChange={(e) => setNewTournamentMaxPlayers(Number(e.target.value))}
+                  className="w-24"
+                  placeholder="Max players"
+                />
+              </div>
+              <Button onClick={handleCreateTournamentClick} className="bg-green-600 hover:bg-green-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Create
+              </Button>
+            </div>
+            <p className="text-sm text-gray-600">
+              Maximum players must be an even number (minimum 4). Default is 16 players (8 per group).
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -190,6 +236,10 @@ const TournamentManagement = ({
                 </div>
               </div>
               <p className="text-sm text-gray-600">{tournament.date}</p>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Users className="h-4 w-4" />
+                <span>Max {tournament.maxPlayers} players ({tournament.maxPlayers/2} per group)</span>
+              </div>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="flex gap-2 flex-wrap">
@@ -239,6 +289,36 @@ const TournamentManagement = ({
           </Card>
         )}
       </div>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Tournament Details</DialogTitle>
+            <DialogDescription>
+              Please confirm the tournament details before creating:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <div>
+              <strong>Tournament Name:</strong> {newTournamentName}
+            </div>
+            <div>
+              <strong>Date:</strong> {newTournamentDate}
+            </div>
+            <div>
+              <strong>Maximum Players:</strong> {newTournamentMaxPlayers} ({newTournamentMaxPlayers/2} per group)
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelCreateTournament}>
+              Cancel
+            </Button>
+            <Button onClick={confirmCreateTournament} className="bg-green-600 hover:bg-green-700">
+              Create Tournament
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

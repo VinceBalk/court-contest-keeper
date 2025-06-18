@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Trash2, Crown, Target, Edit2, Check, X, Plus, Minus, ArrowUp, ArrowDown, Eye } from "lucide-react";
+import { UserPlus, Trash2, Crown, Target, Edit2, Check, X, Plus, Minus, ArrowUp, ArrowDown, Eye, Users } from "lucide-react";
 import { Player, Match } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
 import PlayerDetailView from "./PlayerDetailView";
@@ -225,6 +225,8 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
   const allPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
   const topGroupPlayers = allPlayers.filter(p => p.group === 'top');
   const bottomGroupPlayers = allPlayers.filter(p => p.group === 'bottom');
+  const activeTopPlayers = topGroupPlayers.filter(p => p.isActive);
+  const activeBottomPlayers = bottomGroupPlayers.filter(p => p.isActive);
 
   const renderPlayerCard = (player: Player, groupType: 'top' | 'bottom') => {
     const activeInGroup = players.filter(p => p.isActive && p.group === groupType).length;
@@ -437,7 +439,16 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-yellow-700">
               <Crown className="h-5 w-5" />
-              Linker Rijtje ({topGroupPlayers.filter(p => p.isActive).length}/8 active, {topGroupPlayers.length} total)
+              Linker Rijtje
+              <div className="flex items-center gap-2 ml-auto">
+                <Users className="h-4 w-4" />
+                <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300">
+                  {activeTopPlayers.length}/8 active
+                </Badge>
+                <Badge variant="outline" className="text-yellow-700 border-yellow-300">
+                  {topGroupPlayers.length} total
+                </Badge>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -454,7 +465,16 @@ const PlayerManagement = ({ players, setPlayers, matches = [] }: PlayerManagemen
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
               <Target className="h-5 w-5" />
-              Rechter Rijtje ({bottomGroupPlayers.filter(p => p.isActive).length}/8 active, {bottomGroupPlayers.length} total)
+              Rechter Rijtje
+              <div className="flex items-center gap-2 ml-auto">
+                <Users className="h-4 w-4" />
+                <Badge className="bg-blue-100 text-blue-700 border-blue-300">
+                  {activeBottomPlayers.length}/8 active
+                </Badge>
+                <Badge variant="outline" className="text-blue-700 border-blue-300">
+                  {bottomGroupPlayers.length} total
+                </Badge>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
