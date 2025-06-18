@@ -9,6 +9,7 @@ import TournamentManagement from "@/components/TournamentManagement";
 import SpecialManagement, { SpecialType } from "@/components/SpecialManagement";
 import TranslationManagement from "@/components/TranslationManagement";
 import RoundNavigation from "@/components/RoundNavigation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { Trophy, Users, Calendar, Target, Star } from "lucide-react";
 import { useT } from "@/contexts/TranslationContext";
 
@@ -94,14 +95,20 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-4">
       <div className="max-w-7xl mx-auto">
         <header className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Trophy className="h-10 w-10 text-yellow-500" />
-            <h1 className="text-4xl font-bold text-gray-800">Padel Tournament Manager</h1>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1" />
+            <div className="flex items-center gap-3">
+              <Trophy className="h-10 w-10 text-yellow-500" />
+              <h1 className="text-4xl font-bold text-gray-800">{t('header.title')}</h1>
+            </div>
+            <div className="flex-1 flex justify-end">
+              <LanguageSwitcher />
+            </div>
           </div>
-          <p className="text-lg text-gray-600">Track your tournaments, matches, and player rankings</p>
+          <p className="text-lg text-gray-600">{t('header.subtitle')}</p>
           {activeTournament && (
             <div className="mt-4 p-3 bg-blue-100 rounded-lg">
-              <p className="text-blue-800 font-medium">Active Tournament: {activeTournament.name}</p>
+              <p className="text-blue-800 font-medium">{t('tournament.activeDescription')} {activeTournament.name}</p>
             </div>
           )}
         </header>
@@ -112,7 +119,7 @@ const Index = () => {
             onClick={() => handleStatsCardClick('activePlayers')}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Players</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('general.activePlayers')}</CardTitle>
               <Users className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
@@ -128,27 +135,27 @@ const Index = () => {
             onClick={() => handleStatsCardClick('totalPlayers')}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Players</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('general.totalPlayers')}</CardTitle>
               <Calendar className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{players.length}</div>
               <p className="text-xs text-gray-600">
-                Available player pool
+                {t('player.availablePool')}
               </p>
             </CardContent>
           </Card>
 
           <Card className="bg-white/80 backdrop-blur-sm border-purple-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current Round</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('general.currentRound')}</CardTitle>
               <Target className="h-4 w-4 text-purple-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-purple-600">
                 {activeTournament ? `${currentRound}/3` : '-'}
               </div>
-              <p className="text-xs text-gray-600">Tournament Progress</p>
+              <p className="text-xs text-gray-600">{t('general.tournamentProgress')}</p>
             </CardContent>
           </Card>
 
@@ -157,14 +164,14 @@ const Index = () => {
             onClick={() => handleStatsCardClick('specialTypes')}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Special Types</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('general.specialTypes')}</CardTitle>
               <Star className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-orange-600">
                 {specialTypes.filter(s => s.isActive).length}
               </div>
-              <p className="text-xs text-gray-600">Active Special Types</p>
+              <p className="text-xs text-gray-600">{t('general.activeSpecialTypes')}</p>
             </CardContent>
           </Card>
         </div>

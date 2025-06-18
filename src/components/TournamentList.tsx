@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Trophy } from "lucide-react";
 import { Tournament, Player } from "@/pages/Index";
 import { useToast } from "@/hooks/use-toast";
+import { useT } from "@/contexts/TranslationContext";
 import TournamentCard from "./TournamentCard";
 
 interface TournamentListProps {
@@ -25,6 +26,7 @@ const TournamentList = ({
   setPlayers
 }: TournamentListProps) => {
   const { toast } = useToast();
+  const { t } = useT();
 
   const activateTournament = (tournament: Tournament) => {
     // Deactivate all tournaments
@@ -50,8 +52,8 @@ const TournamentList = ({
     setPlayers(resetPlayers);
     
     toast({
-      title: "Tournament Activated",
-      description: `${tournament.name} is now the active tournament`,
+      title: t('tournament.activated'),
+      description: `${tournament.name} ${t('tournament.activatedDescription')}`,
     });
   };
 
@@ -82,8 +84,8 @@ const TournamentList = ({
     }
     
     toast({
-      title: "Tournament Completed",
-      description: `${tournament.name} has been marked as completed`,
+      title: t('tournament.completed'),
+      description: `${tournament.name} ${t('tournament.completedDescription')}`,
     });
   };
 
@@ -96,8 +98,8 @@ const TournamentList = ({
     }
     
     toast({
-      title: "Tournament Deleted",
-      description: `${tournament?.name} has been deleted`,
+      title: t('tournament.deleted'),
+      description: `${tournament?.name} ${t('tournament.deletedDescription')}`,
     });
   };
 
@@ -117,8 +119,8 @@ const TournamentList = ({
         <Card className="bg-white/90 backdrop-blur-sm col-span-full">
           <CardContent className="text-center py-12">
             <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">No tournaments created yet</p>
-            <p className="text-gray-400 text-sm">Create your first tournament to get started</p>
+            <p className="text-gray-500 text-lg">{t('tournament.noTournaments')}</p>
+            <p className="text-gray-400 text-sm">{t('tournament.getStarted')}</p>
           </CardContent>
         </Card>
       )}

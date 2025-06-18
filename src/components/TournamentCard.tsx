@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Play, Archive, Trash2, Users } from "lucide-react";
 import { Tournament } from "@/pages/Index";
+import { useT } from "@/contexts/TranslationContext";
 
 interface TournamentCardProps {
   tournament: Tournament;
@@ -18,6 +19,8 @@ const TournamentCard = ({
   onComplete, 
   onDelete 
 }: TournamentCardProps) => {
+  const { t } = useT();
+
   return (
     <Card className={`bg-white/90 backdrop-blur-sm ${
       tournament.isActive ? 'ring-2 ring-blue-500 bg-blue-50/90' : ''
@@ -31,12 +34,12 @@ const TournamentCard = ({
           <div className="flex gap-1">
             {tournament.isActive && (
               <Badge className="bg-blue-100 text-blue-700 border-blue-300">
-                Active
+                {t('tournament.active')}
               </Badge>
             )}
             {tournament.completed && (
               <Badge className="bg-green-100 text-green-700 border-green-300">
-                Completed
+                {t('tournament.completed.badge')}
               </Badge>
             )}
           </div>
@@ -44,7 +47,7 @@ const TournamentCard = ({
         <p className="text-sm text-gray-600">{tournament.date}</p>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Users className="h-4 w-4" />
-          <span>Max {tournament.maxPlayers} players ({tournament.maxPlayers/2} per group)</span>
+          <span>{t('general.max')} {tournament.maxPlayers} {t('general.players')} ({tournament.maxPlayers/2} {t('player.maxPlayersPerGroup')})</span>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -56,7 +59,7 @@ const TournamentCard = ({
               className="bg-blue-600 hover:bg-blue-700"
             >
               <Play className="h-4 w-4 mr-1" />
-              Activate
+              {t('tournament.activate')}
             </Button>
           )}
           
@@ -68,7 +71,7 @@ const TournamentCard = ({
               className="text-green-600 hover:text-green-700 hover:bg-green-50"
             >
               <Archive className="h-4 w-4 mr-1" />
-              Complete
+              {t('tournament.complete')}
             </Button>
           )}
           
