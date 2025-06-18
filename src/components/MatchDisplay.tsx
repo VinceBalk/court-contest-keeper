@@ -36,16 +36,11 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
             const team2Players = match.team2.map(id => players.find(p => p.id === id)?.name).join(" & ");
             
             // Calculate total special points for display with proper type safety
-            const getSpecialCount = (specialPoints: any): number => {
+            const getSpecialCount = (specialPoints: { [playerId: string]: number }): number => {
               if (!specialPoints || typeof specialPoints !== 'object') return 0;
-              return Object.values(specialPoints).reduce((total: number, playerSpecials: any) => {
+              return Object.values(specialPoints).reduce((total: number, playerSpecials: unknown) => {
                 if (typeof playerSpecials === 'number') {
                   return total + playerSpecials;
-                }
-                if (typeof playerSpecials === 'object' && playerSpecials !== null) {
-                  return total + Object.values(playerSpecials).reduce((sum: number, val: any) => {
-                    return sum + (typeof val === 'number' ? val : 0);
-                  }, 0);
                 }
                 return total;
               }, 0);
