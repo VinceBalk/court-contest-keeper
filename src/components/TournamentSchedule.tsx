@@ -1,8 +1,5 @@
+
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Trophy, Shuffle, Edit } from "lucide-react";
 import { Player, Match, Tournament } from "@/pages/Index";
 import { SpecialType } from "./SpecialManagement";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +9,9 @@ import MatchDisplay from "./MatchDisplay";
 import ManualPairingSetup from "./ManualPairingSetup";
 import MatchPreview from "./MatchPreview";
 import RankingScoring from "./RankingScoring";
+import RoundHeader from "./RoundHeader";
+import MatchGenerationControls from "./MatchGenerationControls";
+import MatchGenerationStatus from "./MatchGenerationStatus";
 
 interface TournamentScheduleProps {
   players: Player[];
@@ -101,60 +101,6 @@ const TournamentSchedule = ({
     setPreviewMatches(null);
   };
 
-  const generateRoundMatches = () => {
-    if (!activeTournament) {
-      toast({
-        title: "Error",
-        description: "No active tournament selected",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      let topMatches: Match[] = [];
-      let bottomMatches: Match[] = [];
-
-      // Check if this is the final round (round 3) and use score-based generation
-      if (currentRound === 3) {
-        topMatches = generateFinalRoundMatches('top', currentRound, activePlayers, activeTournament);
-        bottomMatches = generateFinalRoundMatches('bottom', currentRound, activePlayers, activeTournament);
-        
-        toast({
-          title: "Final Round Generated",
-          description: "Round 3 matches created based on previous round scores",
-        });
-      } else if (isManualMode) {
-        topMatches = generateManualMatches('top', currentRound, manualPairings.top, activeTournament);
-        bottomMatches = generateManualMatches('bottom', currentRound, manualPairings.bottom, activeTournament);
-        
-        toast({
-          title: "Manual Matches Generated",
-          description: `Round ${currentRound} matches have been created with your pairings`,
-        });
-      } else {
-        topMatches = generateRandomMatches('top', currentRound, activePlayers, activeTournament);
-        bottomMatches = generateRandomMatches('bottom', currentRound, activePlayers, activeTournament);
-        
-        toast({
-          title: "Random Matches Generated",
-          description: `Round ${currentRound} matches have been randomly created`,
-        });
-      }
-      
-      const allNewMatches = [...topMatches, ...bottomMatches];
-      const existingMatches = matches.filter(m => m.round !== currentRound);
-      
-      setMatches([...existingMatches, ...allNewMatches]);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to generate matches",
-        variant: "destructive"
-      });
-    }
-  };
-
   const initializeManualPairings = () => {
     const createEmptyPairings = () => Array(6).fill(null).map(() => ({ 
       team1: ['', ''] as [string, string], 
@@ -166,6 +112,14 @@ const TournamentSchedule = ({
       bottom: createEmptyPairings()
     });
     setIsManualMode(true);
+  };
+
+  const handleToggleManualMode = () => {
+    if (isManualMode) {
+      setIsManualMode(false);
+    } else {
+      initializeManualPairings();
+    }
   };
 
   const handleSubmitScore = (
@@ -269,67 +223,32 @@ const TournamentSchedule = ({
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Calendar className="h-6 w-6 text-blue-600" />
-          Round {currentRound} Matches
-          {currentRound === 3 && (
-            <Badge className="bg-yellow-500 text-yellow-900 ml-2">Final Round</Badge>
-          )}
-        </h2>
-        <div className="flex gap-2">
-          {canGenerateMatches && currentRoundMatches.length === 0 && !previewMatches && (
-            <>
-              <Button onClick={generateMatchPreview} className="bg-green-600 hover:bg-green-700">
-                <Shuffle className="h-4 w-4 mr-2" />
-                {currentRound === 3 ? 'Preview Final Round' : (isManualMode ? 'Preview Manual' : 'Preview Random')}
-              </Button>
-              {currentRound !== 3 && (
-                <Button 
-                  onClick={() => isManualMode ? setIsManualMode(false) : initializeManualPairings()}
-                  variant="outline"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  {isManualMode ? 'Switch to Random' : 'Manual Setup'}
-                </Button>
-              )}
-            </>
-          )}
-          {currentRound < 3 && !previewMatches && (
-            <Button 
-              onClick={() => setCurrentRound(currentRound + 1)}
-              variant="outline"
-            >
-              Next Round
-            </Button>
-          )}
-        </div>
+        <RoundHeader
+          currentRound={currentRound}
+          canGenerateMatches={canGenerateMatches}
+          hasCurrentRoundMatches={currentRoundMatches.length > 0}
+          hasPreviewMatches={!!previewMatches}
+          onNextRound={() => setCurrentRound(currentRound + 1)}
+        />
+        <MatchGenerationControls
+          currentRound={currentRound}
+          canGenerateMatches={canGenerateMatches}
+          hasCurrentRoundMatches={currentRoundMatches.length > 0}
+          hasPreviewMatches={!!previewMatches}
+          isManualMode={isManualMode}
+          onGeneratePreview={generateMatchPreview}
+          onToggleManualMode={handleToggleManualMode}
+        />
       </div>
 
-      {currentRound === 3 && currentRoundMatches.length === 0 && !previewMatches && (
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="pt-6">
-            <p className="text-yellow-800 text-center">
-              <Trophy className="h-5 w-5 inline mr-2" />
-              Final round matches will be generated based on scores from rounds 1 and 2.
-              Players will be ranked by total points within each group.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {!canGenerateMatches && (
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="pt-6">
-            <p className="text-yellow-800 text-center">
-              Both groups need at least 4 active players each with even numbers to generate matches.
-              <br />
-              Current Active: Linker Rijtje ({topGroupPlayers.length}), Rechter Rijtje ({bottomGroupPlayers.length})
-              <br />
-              <span className="text-sm">Use the Players & Groups tab to activate players for the tournament (max 8 per group)</span>
-            </p>
-          </CardContent>
-        </Card>
-      )}
+      <MatchGenerationStatus
+        currentRound={currentRound}
+        canGenerateMatches={canGenerateMatches}
+        hasCurrentRoundMatches={currentRoundMatches.length > 0}
+        hasPreviewMatches={!!previewMatches}
+        topGroupCount={topGroupPlayers.length}
+        bottomGroupCount={bottomGroupPlayers.length}
+      />
 
       {isManualMode && currentRound !== 3 && currentRoundMatches.length === 0 && !previewMatches && (
         <ManualPairingSetup 
