@@ -111,13 +111,18 @@ const TournamentSchedule = ({
     match: Match, 
     team1Score: number, 
     team2Score: number, 
-    specialPoints: { [playerId: string]: { count: number; type: string }[] }
+    specialPoints: { [playerId: string]: { [specialType: string]: number } }
   ) => {
-    // Convert new special points structure to number for storage
+    // Convert new special points structure to number for storage (sum all types)
     const convertedSpecialPoints: { [playerId: string]: number } = {};
     Object.entries(specialPoints).forEach(([playerId, specials]) => {
-      convertedSpecialPoints[playerId] = specials.reduce((sum, special) => sum + special.count, 0);
+      convertedSpecialPoints[playerId] = Object.values(specials).reduce((sum, count) => sum + count, 0);
     });
+
+    // Calculate the difference in scores for player stats update
+    const oldTeam1Score = match.team1Score || 0;
+    const oldTeam2Score = match.team2Score || 0;
+    const oldSpecialPoints = match.specialPoints || {};
 
     // Update match
     const updatedMatch = {
@@ -131,26 +136,36 @@ const TournamentSchedule = ({
     const updatedMatches = matches.map(m => m.id === match.id ? updatedMatch : m);
     setMatches(updatedMatches);
 
-    // Update player stats
+    // Update player stats (handle both new entries and edits)
     const updatedPlayers = players.map(player => {
       const team1Players = match.team1;
       const team2Players = match.team2;
       
       if (team1Players.includes(player.id)) {
+        const scoreDiff = team1Score - oldTeam1Score;
+        const oldPlayerSpecials = typeof oldSpecialPoints[player.id] === 'number' ? oldSpecialPoints[player.id] : 0;
+        const newPlayerSpecials = convertedSpecialPoints[player.id] || 0;
+        const specialsDiff = newPlayerSpecials - oldPlayerSpecials;
+        
         return {
           ...player,
-          totalGames: player.totalGames + team1Score,
-          totalSpecials: player.totalSpecials + (convertedSpecialPoints[player.id] || 0),
-          totalPoints: player.totalPoints + team1Score + (convertedSpecialPoints[player.id] || 0),
-          matchesPlayed: player.matchesPlayed + 1
+          totalGames: player.totalGames + scoreDiff,
+          totalSpecials: player.totalSpecials + specialsDiff,
+          totalPoints: player.totalPoints + scoreDiff + specialsDiff,
+          matchesPlayed: match.completed ? player.matchesPlayed : player.matchesPlayed + 1
         };
       } else if (team2Players.includes(player.id)) {
+        const scoreDiff = team2Score - oldTeam2Score;
+        const oldPlayerSpecials = typeof oldSpecialPoints[player.id] === 'number' ? oldSpecialPoints[player.id] : 0;
+        const newPlayerSpecials = convertedSpecialPoints[player.id] || 0;
+        const specialsDiff = newPlayerSpecials - oldPlayerSpecials;
+        
         return {
           ...player,
-          totalGames: player.totalGames + team2Score,
-          totalSpecials: player.totalSpecials + (convertedSpecialPoints[player.id] || 0),
-          totalPoints: player.totalPoints + team2Score + (convertedSpecialPoints[player.id] || 0),
-          matchesPlayed: player.matchesPlayed + 1
+          totalGames: player.totalGames + scoreDiff,
+          totalSpecials: player.totalSpecials + specialsDiff,
+          totalPoints: player.totalPoints + scoreDiff + specialsDiff,
+          matchesPlayed: match.completed ? player.matchesPlayed : player.matchesPlayed + 1
         };
       }
       return player;
@@ -160,8 +175,8 @@ const TournamentSchedule = ({
     setSelectedMatch(null);
 
     toast({
-      title: "Score Submitted",
-      description: "Match result has been recorded",
+      title: match.completed ? "Score Updated" : "Score Submitted",
+      description: match.completed ? "Match result has been updated" : "Match result has been recorded",
     });
   };
 

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Target } from "lucide-react";
+import { Trophy, Target, Edit } from "lucide-react";
 import { Player, Match } from "@/pages/Index";
 
 interface MatchDisplayProps {
@@ -69,15 +69,28 @@ const MatchDisplay = ({ group, matches, players, onSelectMatch }: MatchDisplayPr
                     </div>
                   )}
                 </div>
-                {!match.completed && (
-                  <Button
-                    onClick={() => onSelectMatch(match)}
-                    className="w-full mt-2"
-                    size="sm"
-                  >
-                    Enter Score
-                  </Button>
-                )}
+                <div className="flex gap-2 mt-2">
+                  {!match.completed && (
+                    <Button
+                      onClick={() => onSelectMatch(match)}
+                      className="flex-1"
+                      size="sm"
+                    >
+                      Enter Score
+                    </Button>
+                  )}
+                  {match.completed && (
+                    <Button
+                      onClick={() => onSelectMatch(match)}
+                      variant="outline"
+                      className="flex-1"
+                      size="sm"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit Score
+                    </Button>
+                  )}
+                </div>
               </div>
             );
           })}

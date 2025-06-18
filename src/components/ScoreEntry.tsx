@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, X } from "lucide-react";
+import { Users, X, Plus, Minus } from "lucide-react";
 import { Player, Match } from "@/pages/Index";
 import { SpecialType } from "./SpecialManagement";
 import { useToast } from "@/hooks/use-toast";
@@ -17,15 +17,27 @@ interface ScoreEntryProps {
     match: Match, 
     team1Score: number, 
     team2Score: number, 
-    specialPoints: { [playerId: string]: { count: number; type: string }[] }
+    specialPoints: { [playerId: string]: { [specialType: string]: number } }
   ) => void;
   onCancel: () => void;
 }
 
 const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: ScoreEntryProps) => {
-  const [team1Score, setTeam1Score] = useState(0);
-  const [team2Score, setTeam2Score] = useState(8);
-  const [specialPoints, setSpecialPoints] = useState<{ [playerId: string]: { count: number; type: string }[] }>({});
+  const [team1Score, setTeam1Score] = useState(match.team1Score || 0);
+  const [team2Score, setTeam2Score] = useState(match.team2Score || 8);
+  const [specialPoints, setSpecialPoints] = useState<{ [playerId: string]: { [specialType: string]: number } }>(() => {
+    // Initialize with existing special points if editing
+    const initialSpecials: { [playerId: string]: { [specialType: string]: number } } = {};
+    if (match.specialPoints) {
+      Object.entries(match.specialPoints).forEach(([playerId, count]) => {
+        if (typeof count === 'number' && count > 0) {
+          // For existing data, assume it's all "General" type
+          initialSpecials[playerId] = { "General": count };
+        }
+      });
+    }
+    return initialSpecials;
+  });
   const { toast } = useToast();
 
   const activeSpecialTypes = specialTypes.filter(s => s.isActive);
@@ -51,22 +63,34 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
     onSubmitScore(match, team1Score, team2Score, specialPoints);
   };
 
-  const addSpecialPoint = (playerId: string, type: string) => {
+  const addSpecialPoint = (playerId: string, specialType: string) => {
     setSpecialPoints(prev => ({
       ...prev,
-      [playerId]: [...(prev[playerId] || []), { count: 1, type }]
+      [playerId]: {
+        ...prev[playerId],
+        [specialType]: (prev[playerId]?.[specialType] || 0) + 1
+      }
     }));
   };
 
-  const removeSpecialPoint = (playerId: string, index: number) => {
-    setSpecialPoints(prev => ({
-      ...prev,
-      [playerId]: (prev[playerId] || []).filter((_, i) => i !== index)
-    }));
+  const removeSpecialPoint = (playerId: string, specialType: string) => {
+    setSpecialPoints(prev => {
+      const playerSpecials = { ...prev[playerId] };
+      if (playerSpecials[specialType] > 1) {
+        playerSpecials[specialType] = playerSpecials[specialType] - 1;
+      } else {
+        delete playerSpecials[specialType];
+      }
+      
+      return {
+        ...prev,
+        [playerId]: Object.keys(playerSpecials).length > 0 ? playerSpecials : {}
+      };
+    });
   };
 
   const getPlayerSpecialCount = (playerId: string) => {
-    return (specialPoints[playerId] || []).reduce((sum, special) => sum + special.count, 0);
+    return Object.values(specialPoints[playerId] || {}).reduce((sum, count) => sum + count, 0);
   };
 
   return (
@@ -74,7 +98,7 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-green-700 text-lg">
           <Users className="h-5 w-5" />
-          Enter Score - Court {match.court}
+          {match.completed ? 'Edit Score' : 'Enter Score'} - Court {match.court}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -111,7 +135,7 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
           <div className="space-y-3">
             {[...match.team1, ...match.team2].map(playerId => {
               const player = players.find(p => p.id === playerId);
-              const playerSpecials = specialPoints[playerId] || [];
+              const playerSpecials = specialPoints[playerId] || {};
               
               return (
                 <div key={playerId} className="p-3 border rounded-lg bg-gray-50">
@@ -124,7 +148,7 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
                   
                   <div className="flex gap-2 mb-2">
                     <Select onValueChange={(type) => addSpecialPoint(playerId, type)}>
-                      <SelectTrigger className="w-32 h-8 text-xs">
+                      <SelectTrigger className="w-40 h-8 text-xs">
                         <SelectValue placeholder="Add special" />
                       </SelectTrigger>
                       <SelectContent>
@@ -137,16 +161,26 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
                     </Select>
                   </div>
 
-                  <div className="flex flex-wrap gap-1">
-                    {playerSpecials.map((special, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded cursor-pointer hover:bg-blue-200"
-                        onClick={() => removeSpecialPoint(playerId, index)}
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(playerSpecials).map(([specialType, count]) => (
+                      <div
+                        key={specialType}
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded border"
                       >
-                        {special.type}
-                        <X className="h-3 w-3 text-blue-600" />
-                      </span>
+                        <button
+                          onClick={() => removeSpecialPoint(playerId, specialType)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="mx-1">{specialType}: {count}</span>
+                        <button
+                          onClick={() => addSpecialPoint(playerId, specialType)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -157,7 +191,7 @@ const ScoreEntry = ({ match, players, specialTypes, onSubmitScore, onCancel }: S
 
         <div className="flex gap-2 pt-2">
           <Button onClick={handleSubmit} className="bg-green-600 hover:bg-green-700 flex-1">
-            Submit Score
+            {match.completed ? 'Update Score' : 'Submit Score'}
           </Button>
           <Button variant="outline" onClick={onCancel} className="flex-1">
             Cancel
