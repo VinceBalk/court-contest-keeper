@@ -101,7 +101,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
     }
 
     const updatedPlayers = players.map(p =>
-      p.id === playerId ? { ...p, group: 'top' } : p
+      p.id === playerId ? { ...p, group: 'top' as const } : p
     ).sort((a, b) => a.name.localeCompare(b.name));
 
     setPlayers(updatedPlayers);
@@ -127,7 +127,7 @@ const PlayerManagement = ({ players, setPlayers }: PlayerManagementProps) => {
     }
 
     const updatedPlayers = players.map(p =>
-      p.id === playerId ? { ...p, group: 'bottom' } : p
+      p.id === playerId ? { ...p, group: 'bottom' as const } : p
     ).sort((a, b) => a.name.localeCompare(b.name));
 
     setPlayers(updatedPlayers);
