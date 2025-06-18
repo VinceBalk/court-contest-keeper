@@ -118,3 +118,38 @@ export const useUpdateMatch = () => {
     },
   });
 };
+
+export const useDeleteRoundMatches = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ round, tournamentId }: { round: number; tournamentId?: string }) => {
+      let query = supabase
+        .from('matches')
+        .delete()
+        .eq('round', round);
+      
+      if (tournamentId) {
+        query = query.eq('tournament_id', tournamentId);
+      }
+      
+      const { error } = await query;
+      if (error) throw error;
+      
+      // Also clear local storage
+      const savedMatches = localStorage.getItem('tournament-matches');
+      if (savedMatches) {
+        const matches = JSON.parse(savedMatches);
+        const filteredMatches = matches.filter((match: Match) => 
+          match.round !== round || (tournamentId && match.tournamentId !== tournamentId)
+        );
+        localStorage.setItem('tournament-matches', JSON.stringify(filteredMatches));
+      }
+      
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['matches'] });
+    },
+  });
+};
