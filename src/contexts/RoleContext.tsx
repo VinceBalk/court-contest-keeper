@@ -81,30 +81,10 @@ export const RoleProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulate loading user profile and roles
     const loadUserProfile = () => {
       if (user?.email) {
-        // Find user profile by email in test data
-        const profile = testUserProfiles.find(p => p.email === user.email);
-        if (profile) {
-          setUserProfile(profile);
-          setUserRoles(profile.roles.map(r => r.role));
-        } else {
-          // Default to player role for new users
-          const defaultProfile: UserProfile = {
-            id: Date.now().toString(),
-            username: user.email.split('@')[0],
-            email: user.email,
-            isActive: true,
-            createdAt: new Date().toISOString(),
-            roles: [{
-              id: Date.now().toString(),
-              userId: Date.now().toString(),
-              role: 'player',
-              assignedAt: new Date().toISOString(),
-              assignedBy: 'system'
-            }]
-          };
-          setUserProfile(defaultProfile);
-          setUserRoles(['player']);
-        }
+        // Find user profile by email in test data - default to admin for mock user
+        const profile = testUserProfiles.find(p => p.email === user.email) || testUserProfiles[0];
+        setUserProfile(profile);
+        setUserRoles(profile.roles.map(r => r.role));
       } else {
         setUserProfile(null);
         setUserRoles([]);

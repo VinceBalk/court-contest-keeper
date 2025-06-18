@@ -14,7 +14,7 @@ const getActiveColor = (color: string) => {
 const TabButton = ({ tab }: TabButtonProps) => (
   <TabsTrigger 
     value={tab.value} 
-    className={`${getActiveColor(tab.color)} text-xs sm:text-sm px-2 py-2`}
+    className={`${getActiveColor(tab.color)} text-xs sm:text-sm px-2 py-2 min-h-[44px] font-medium`}
   >
     <span className="hidden sm:inline">{tab.label}</span>
     <span className="sm:hidden">{tab.shortLabel}</span>

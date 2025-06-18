@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TranslationProvider } from "@/contexts/TranslationContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RoleProvider } from "@/contexts/RoleContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import TournamentView from "./pages/TournamentView";
 import RoundViewWrapper from "./components/RoundViewWrapper";
@@ -27,8 +28,22 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Index />} />
-                <Route path="/tournament/:tournamentId" element={<TournamentView />} />
-                <Route path="/round/:round" element={<RoundViewWrapper />} />
+                <Route 
+                  path="/tournament/:tournamentId" 
+                  element={
+                    <ProtectedRoute requiredPermission="canViewMatches">
+                      <TournamentView />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/round/:round" 
+                  element={
+                    <ProtectedRoute requiredPermission="canViewMatches">
+                      <RoundViewWrapper />
+                    </ProtectedRoute>
+                  } 
+                />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

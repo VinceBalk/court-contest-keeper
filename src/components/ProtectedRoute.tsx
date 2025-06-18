@@ -1,15 +1,20 @@
 
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRole } from "@/contexts/RoleContext";
+import { useRolePermissions } from "@/hooks/useRolePermissions";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredPermission?: keyof ReturnType<typeof useRolePermissions>;
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, requiredPermission }: ProtectedRouteProps) => {
   const { loading } = useAuth();
+  const { userRoles, loading: roleLoading } = useRole();
+  const permissions = useRolePermissions(userRoles);
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
         <div className="text-center">
@@ -20,7 +25,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // Authentication disabled - always allow access
+  // Check if user has required permission
+  if (requiredPermission && !permissions[requiredPermission]) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Authentication disabled - always allow access if permission check passes
   return <>{children}</>;
 };
 

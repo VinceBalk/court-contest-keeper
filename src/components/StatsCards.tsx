@@ -97,29 +97,29 @@ const StatsCards = ({
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mb-4 sm:mb-6">
       {visibleCards.map((card, index) => {
         const IconComponent = card.icon;
         return (
           <Card 
             key={index} 
-            className={`${card.bgColor} border-0 cursor-pointer hover:shadow-md transition-shadow bg-white/80 backdrop-blur-sm`}
+            className={`${card.bgColor} border-0 cursor-pointer hover:shadow-md transition-shadow bg-white/90 backdrop-blur-sm min-h-[80px] sm:min-h-[100px]`}
             onClick={() => onStatsCardClick(card.clickType)}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 p-3 sm:p-4">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-700 leading-tight">
                 {card.title}
               </CardTitle>
-              <IconComponent className={`h-4 w-4 sm:h-5 sm:w-5 ${card.color}`} />
+              <IconComponent className={`h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 ${card.color} flex-shrink-0`} />
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 {card.isConfig ? (
                   <Badge variant="secondary" className="text-xs">
                     {card.value}
                   </Badge>
                 ) : (
-                  <div className={`text-xl sm:text-2xl font-bold ${card.color}`}>
+                  <div className={`text-lg sm:text-xl lg:text-2xl font-bold ${card.color}`}>
                     {card.value}
                   </div>
                 )}

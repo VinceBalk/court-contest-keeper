@@ -115,8 +115,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-2 sm:p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+      <div className="w-full max-w-7xl mx-auto p-2 sm:p-4 lg:p-6">
         <MainHeader activeTournament={activeTournament} />
 
         <StatsCards 
@@ -129,7 +129,7 @@ const Index = () => {
         />
 
         {activeTournament && (
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-6">
             <RoundNavigation 
               matches={activeTournamentMatches}
               activeTournament={activeTournament}
@@ -138,22 +138,24 @@ const Index = () => {
           </div>
         )}
 
-        <MainTabs 
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          tournaments={tournaments}
-          setTournaments={handleSetTournaments}
-          activeTournament={activeTournament}
-          setActiveTournament={handleSetActiveTournament}
-          setCurrentRound={setCurrentRound}
-          players={players}
-          setPlayers={handleSetPlayers}
-          matches={matches}
-          setMatches={handleSetMatches}
-          currentRound={currentRound}
-          specialTypes={specialTypes}
-          setSpecialTypes={handleSetSpecialTypes}
-        />
+        <div className="w-full overflow-hidden">
+          <MainTabs 
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            tournaments={tournaments}
+            setTournaments={handleSetTournaments}
+            activeTournament={activeTournament}
+            setActiveTournament={handleSetActiveTournament}
+            setCurrentRound={setCurrentRound}
+            players={players}
+            setPlayers={handleSetPlayers}
+            matches={matches}
+            setMatches={handleSetMatches}
+            currentRound={currentRound}
+            specialTypes={specialTypes}
+            setSpecialTypes={handleSetSpecialTypes}
+          />
+        </div>
       </div>
     </div>
   );
