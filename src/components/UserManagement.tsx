@@ -1,34 +1,15 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Users, UserPlus, Search, Edit, Save, X } from "lucide-react";
+import { Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
-
-interface TestUser {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-  status: string;
-  lastActive: string;
-  tournamentsParticipated: number;
-}
-
-interface EditUserForm {
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-}
+import { TestUser, EditUserForm } from "@/types/user";
+import UserControls from "./UserControls";
+import UserList from "./UserList";
+import UserEditDialog from "./UserEditDialog";
 
 const UserManagement = () => {
   const { user } = useAuth();
@@ -159,16 +140,6 @@ const UserManagement = () => {
     ));
   };
 
-  const changeUserRole = (userId: string, newRole: string) => {
-    setTestUsers(testUsers.map(u => 
-      u.id === userId ? { ...u, role: newRole } : u
-    ));
-    toast({
-      title: "Role Updated",
-      description: `User role changed to ${newRole}`,
-    });
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active': return 'bg-green-100 text-green-700';
@@ -198,102 +169,22 @@ const UserManagement = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Controls */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Label htmlFor="search">Search Users</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="search"
-                  placeholder="Search by name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="w-full sm:w-48">
-              <Label>Filter by Role</Label>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                  <SelectItem value="Moderator">Moderator</SelectItem>
-                  <SelectItem value="Player">Player</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end">
-              <Button onClick={handleCreateUser} className="flex items-center gap-2">
-                <UserPlus className="h-4 w-4" />
-                Add User
-              </Button>
-            </div>
-          </div>
+          <UserControls
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            roleFilter={roleFilter}
+            onRoleFilterChange={setRoleFilter}
+            onCreateUser={handleCreateUser}
+          />
 
-          {/* Users List */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Users ({filteredUsers.length})</h3>
-            </div>
-            
-            <div className="grid gap-3">
-              {filteredUsers.map((testUser) => (
-                <div key={testUser.id} className="p-4 bg-gray-50 rounded-lg border">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div>
-                          <p className="font-medium">{testUser.name}</p>
-                          <p className="text-sm text-gray-600">{testUser.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <span>Last active: {testUser.lastActive}</span>
-                        <span>•</span>
-                        <span>Tournaments: {testUser.tournamentsParticipated}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Badge className={getRoleColor(testUser.role)}>
-                        {testUser.role}
-                      </Badge>
-                      <Badge className={getStatusColor(testUser.status)}>
-                        {testUser.status}
-                      </Badge>
-                      
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditUser(testUser)}
-                          className="flex items-center gap-1"
-                        >
-                          <Edit className="h-3 w-3" />
-                          Edit
-                        </Button>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleUserStatus(testUser.id)}
-                        >
-                          Toggle Status
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <UserList
+            users={filteredUsers}
+            onEditUser={handleEditUser}
+            onToggleStatus={toggleUserStatus}
+            getStatusColor={getStatusColor}
+            getRoleColor={getRoleColor}
+          />
 
-          {/* Info Panel */}
           <div className="p-4 bg-blue-50 rounded-lg">
             <h4 className="font-medium text-blue-800 mb-2">Test Environment Information</h4>
             <ul className="text-sm text-blue-700 space-y-1">
@@ -307,107 +198,12 @@ const UserManagement = () => {
         </CardContent>
       </Card>
 
-      {/* Edit User Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSaveUser)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter user name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter email address" type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Admin">Admin</SelectItem>
-                        <SelectItem value="Moderator">Moderator</SelectItem>
-                        <SelectItem value="Player">Player</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Inactive">Inactive</SelectItem>
-                        <SelectItem value="Pending">Pending</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="flex justify-end gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Cancel
-                </Button>
-                <Button type="submit">
-                  <Save className="h-4 w-4 mr-1" />
-                  Save Changes
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <UserEditDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        form={form}
+        onSave={handleSaveUser}
+      />
     </div>
   );
 };
