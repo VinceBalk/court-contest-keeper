@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Palette, Type, Layout, RotateCcw, Download, Upload } from "lucide-react";
 import { useT } from "@/contexts/TranslationContext";
+import { hexToHsl, hslToHex, rgbToHsl, hslToRgb, hexToRgb } from "@/utils/colorUtils";
 
 interface DesignSystemSettings {
   typography: {
@@ -87,6 +88,7 @@ const defaultSettings: DesignSystemSettings = {
 const DesignSystemManager = () => {
   const { t } = useT();
   const [settings, setSettings] = useState<DesignSystemSettings>(defaultSettings);
+  const [colorFormat, setColorFormat] = useState<'hsl' | 'rgb' | 'hex'>('hsl');
 
   useEffect(() => {
     const savedSettings = localStorage.getItem('design-system-settings');
@@ -153,6 +155,50 @@ const DesignSystemManager = () => {
         [colorName]: { ...prev.colors[colorName], [property]: value }
       }
     }));
+  };
+
+  const updateColorFromInput = (colorName: keyof typeof settings.colors, value: string, format: 'hex' | 'rgb') => {
+    if (format === 'hex') {
+      const hsl = hexToHsl(value);
+      if (hsl) {
+        setSettings(prev => ({
+          ...prev,
+          colors: {
+            ...prev.colors,
+            [colorName]: hsl
+          }
+        }));
+      }
+    } else if (format === 'rgb') {
+      const rgbMatch = value.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (rgbMatch) {
+        const r = parseInt(rgbMatch[1]);
+        const g = parseInt(rgbMatch[2]);
+        const b = parseInt(rgbMatch[3]);
+        const hsl = rgbToHsl(r, g, b);
+        setSettings(prev => ({
+          ...prev,
+          colors: {
+            ...prev.colors,
+            [colorName]: hsl
+          }
+        }));
+      }
+    }
+  };
+
+  const getColorValue = (color: { h: number; s: number; l: number }, format: 'hsl' | 'rgb' | 'hex') => {
+    switch (format) {
+      case 'hsl':
+        return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
+      case 'rgb':
+        const rgb = hslToRgb(color.h, color.s, color.l);
+        return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      case 'hex':
+        return hslToHex(color.h, color.s, color.l);
+      default:
+        return `hsl(${color.h}, ${color.s}%, ${color.l}%)`;
+    }
   };
 
   const updateSpacing = (key: keyof typeof settings.spacing, value: number) => {
@@ -279,41 +325,90 @@ const DesignSystemManager = () => {
 
             <TabsContent value="colors" className="space-y-6">
               <div className="grid gap-6">
-                <h3 className="text-lg font-semibold">Color Palette</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Color Palette</h3>
+                  <div className="flex items-center gap-2">
+                    <Label>Format:</Label>
+                    <Select value={colorFormat} onValueChange={(value: 'hsl' | 'rgb' | 'hex') => setColorFormat(value)}>
+                      <SelectTrigger className="w-20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hsl">HSL</SelectItem>
+                        <SelectItem value="rgb">RGB</SelectItem>
+                        <SelectItem value="hex">HEX</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 {Object.entries(settings.colors).map(([colorName, color]) => (
                   <Card key={colorName} className="p-4">
                     <h4 className="text-md font-medium mb-4 capitalize">{colorName}</h4>
                     <div className="grid gap-4">
+                      {colorFormat === 'hsl' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label>Hue: {color.h}</Label>
+                            <Slider
+                              value={[color.h]}
+                              onValueChange={([value]) => updateColor(colorName as keyof typeof settings.colors, 'h', value)}
+                              min={0}
+                              max={360}
+                              step={1}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Saturation: {color.s}%</Label>
+                            <Slider
+                              value={[color.s]}
+                              onValueChange={([value]) => updateColor(colorName as keyof typeof settings.colors, 's', value)}
+                              min={0}
+                              max={100}
+                              step={1}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Lightness: {color.l}%</Label>
+                            <Slider
+                              value={[color.l]}
+                              onValueChange={([value]) => updateColor(colorName as keyof typeof settings.colors, 'l', value)}
+                              min={0}
+                              max={100}
+                              step={1}
+                            />
+                          </div>
+                        </>
+                      )}
+                      
+                      {colorFormat === 'rgb' && (
+                        <div className="space-y-2">
+                          <Label>RGB Value</Label>
+                          <Input
+                            value={getColorValue(color, 'rgb')}
+                            onChange={(e) => updateColorFromInput(colorName as keyof typeof settings.colors, e.target.value, 'rgb')}
+                            placeholder="rgb(255, 255, 255)"
+                          />
+                        </div>
+                      )}
+                      
+                      {colorFormat === 'hex' && (
+                        <div className="space-y-2">
+                          <Label>Hex Value</Label>
+                          <Input
+                            value={getColorValue(color, 'hex')}
+                            onChange={(e) => updateColorFromInput(colorName as keyof typeof settings.colors, e.target.value, 'hex')}
+                            placeholder="#ffffff"
+                          />
+                        </div>
+                      )}
+
                       <div className="space-y-2">
-                        <Label>Hue: {color.h}</Label>
-                        <Slider
-                          value={[color.h]}
-                          onValueChange={([value]) => updateColor(colorName as keyof typeof settings.colors, 'h', value)}
-                          min={0}
-                          max={360}
-                          step={1}
-                        />
+                        <Label>Current Value</Label>
+                        <div className="p-2 bg-gray-100 rounded text-sm font-mono">
+                          {getColorValue(color, colorFormat)}
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Saturation: {color.s}%</Label>
-                        <Slider
-                          value={[color.s]}
-                          onValueChange={([value]) => updateColor(colorName as keyof typeof settings.colors, 's', value)}
-                          min={0}
-                          max={100}
-                          step={1}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Lightness: {color.l}%</Label>
-                        <Slider
-                          value={[color.l]}
-                          onValueChange={([value]) => updateColor(colorName as keyof typeof settings.colors, 'l', value)}
-                          min={0}
-                          max={100}
-                          step={1}
-                        />
-                      </div>
+
                       <div className="flex gap-2 mt-4">
                         {['50', '100', '500', '600', '700'].map((shade) => {
                           const lightness = shade === '50' ? Math.min(color.l + 45, 95) :

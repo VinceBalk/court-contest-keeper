@@ -7,6 +7,8 @@
 
 @layer base {
   :root {
+    font-size: 62.5%; /* 1rem = 10px */
+    
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -136,6 +138,7 @@
 
   body {
     @apply bg-background text-foreground;
+    font-size: 1.6rem; /* 16px with 62.5% root */
   }
 
   /* Responsive Typography Classes */
