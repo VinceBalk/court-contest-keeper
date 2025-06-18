@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Player, Match, Tournament } from "@/pages/Index";
 import { SpecialType } from "./SpecialManagement";
@@ -275,13 +274,13 @@ const TournamentSchedule = ({
             group="top"
             matches={currentRoundMatches}
             players={players}
-            onSelectMatch={setSelectedMatch}
+            onEditMatch={setSelectedMatch}
           />
           <MatchDisplay 
             group="bottom"
             matches={currentRoundMatches}
             players={players}
-            onSelectMatch={setSelectedMatch}
+            onEditMatch={setSelectedMatch}
           />
         </div>
       )}

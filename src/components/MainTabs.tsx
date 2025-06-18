@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { useRole } from "@/contexts/RoleContext";
@@ -68,7 +67,6 @@ const MainTabs = ({
       />
       
       <TabContent
-        permissions={permissions}
         tournaments={tournaments}
         setTournaments={setTournaments}
         activeTournament={activeTournament}
