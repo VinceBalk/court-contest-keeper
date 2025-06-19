@@ -7,9 +7,13 @@ import ScoreEntry from "./ScoreEntry";
 import MatchGenerationControls from "./MatchGenerationControls";
 import TournamentScheduleHeader from "./TournamentScheduleHeader";
 import ManualMatchSetup from "./ManualMatchSetup";
+import CourtSettings from "./CourtSettings";
 import { useTournamentSchedule } from "@/hooks/useTournamentSchedule";
 import { useGameBasedScoring } from "@/hooks/useGameBasedScoring";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 
 interface TournamentScheduleProps {
   players: Player[];
@@ -33,6 +37,7 @@ const TournamentSchedule = ({
   specialTypes
 }: TournamentScheduleProps) => {
   const { toast } = useToast();
+  const [showSettings, setShowSettings] = useState(false);
   
   const {
     previewMatches,
@@ -112,19 +117,36 @@ const TournamentSchedule = ({
 
   return (
     <div className="space-y-6">
-      <TournamentScheduleHeader
-        currentRound={currentRound}
-        activePlayers={activePlayers}
-        topGroupPlayers={topGroupPlayers}
-        bottomGroupPlayers={bottomGroupPlayers}
-        currentRoundMatches={currentRoundMatches}
-        hasCurrentRoundMatches={hasCurrentRoundMatches}
-        canGenerateMatches={canGenerateMatches}
-        isRoundCompleted={isRoundCompleted}
-        onCompleteRound={handleCompleteRound}
-        onDeleteRoundMatches={handleDeleteRoundMatches}
-        deleteRoundMatches={deleteRoundMatches}
-      />
+      <div className="flex justify-between items-center">
+        <div className="flex-1">
+          <TournamentScheduleHeader
+            currentRound={currentRound}
+            activePlayers={activePlayers}
+            topGroupPlayers={topGroupPlayers}
+            bottomGroupPlayers={bottomGroupPlayers}
+            currentRoundMatches={currentRoundMatches}
+            hasCurrentRoundMatches={hasCurrentRoundMatches}
+            canGenerateMatches={canGenerateMatches}
+            isRoundCompleted={isRoundCompleted}
+            onCompleteRound={handleCompleteRound}
+            onDeleteRoundMatches={handleDeleteRoundMatches}
+            deleteRoundMatches={deleteRoundMatches}
+          />
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowSettings(!showSettings)}
+          className="flex items-center gap-2"
+        >
+          <Settings className="w-4 h-4" />
+          Court Settings
+        </Button>
+      </div>
+
+      {showSettings && (
+        <CourtSettings tournamentId={activeTournament.id} />
+      )}
 
       <MatchGenerationControls
         currentRound={currentRound}

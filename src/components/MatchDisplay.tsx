@@ -39,9 +39,18 @@ const MatchDisplay = ({ group, matches, players, tournamentId, onEditMatch }: Ma
     return (typeof baseScore === 'number' ? baseScore : 0) + teamSpecialPoints;
   };
 
+  const getCourtSetting = (courtNumber: number) => {
+    return courtSettings.find(cs => cs.court_number === courtNumber);
+  };
+
   const getCourtName = (courtNumber: number) => {
-    const courtSetting = courtSettings.find(cs => cs.court_number === courtNumber);
+    const courtSetting = getCourtSetting(courtNumber);
     return courtSetting ? courtSetting.court_name : `Court ${courtNumber}`;
+  };
+
+  const getCourtColor = (courtNumber: number) => {
+    const courtSetting = getCourtSetting(courtNumber);
+    return courtSetting ? courtSetting.court_color : '#3B82F6';
   };
 
   return (
@@ -59,12 +68,17 @@ const MatchDisplay = ({ group, matches, players, tournamentId, onEditMatch }: Ma
         groupMatches.map((match) => (
           <Card 
             key={match.id} 
-            className="cursor-pointer hover:bg-muted/50 transition-colors hover:shadow-md" 
+            className="cursor-pointer hover:bg-muted/50 transition-colors hover:shadow-md border-l-4" 
+            style={{ borderLeftColor: getCourtColor(match.court) }}
             onClick={() => onEditMatch?.(match)}
           >
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2" style={{ backgroundColor: `${getCourtColor(match.court)}15` }}>
               <div className="flex justify-between items-center">
-                <CardTitle className="text-sm">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: getCourtColor(match.court) }}
+                  />
                   {getCourtName(match.court)} - {group === 'top' ? 'Linker' : 'Rechter'} Rijtje
                 </CardTitle>
                 <div className="flex items-center gap-2">

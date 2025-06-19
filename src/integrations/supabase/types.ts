@@ -579,6 +579,7 @@ export type Database = {
       }
       tournament_court_settings: {
         Row: {
+          court_color: string | null
           court_name: string
           court_number: number
           created_at: string | null
@@ -587,6 +588,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          court_color?: string | null
           court_name: string
           court_number: number
           created_at?: string | null
@@ -595,6 +597,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          court_color?: string | null
           court_name?: string
           court_number?: number
           created_at?: string | null

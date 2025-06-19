@@ -7,6 +7,7 @@ export interface CourtSetting {
   tournament_id: string;
   court_number: number;
   court_name: string;
+  court_color: string;
   created_at: string;
   updated_at: string;
 }
@@ -32,10 +33,18 @@ export const useUpdateCourtSetting = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, court_name }: { id: string; court_name: string }) => {
+    mutationFn: async ({ id, court_name, court_color }: { 
+      id: string; 
+      court_name?: string; 
+      court_color?: string; 
+    }) => {
+      const updateData: any = {};
+      if (court_name !== undefined) updateData.court_name = court_name;
+      if (court_color !== undefined) updateData.court_color = court_color;
+
       const { data, error } = await supabase
         .from('tournament_court_settings')
-        .update({ court_name })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -58,6 +67,7 @@ export const useCreateCourtSettings = () => {
         tournament_id: tournamentId,
         court_number: i + 1,
         court_name: `Court ${i + 1}`,
+        court_color: i === 0 ? '#3B82F6' : i === 1 ? '#10B981' : i === 2 ? '#F59E0B' : '#EF4444',
       }));
 
       const { data, error } = await supabase
