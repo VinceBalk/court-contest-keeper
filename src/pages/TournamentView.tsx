@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +10,7 @@ import { Tournament, Player, Match } from "@/pages/Index";
 import { SpecialType } from "@/components/SpecialManagement";
 import PlayerManagement from "@/components/PlayerManagement";
 import TournamentSchedule from "@/components/TournamentSchedule";
-import Rankings from "@/components/Rankings";
+import GameBasedRankings from "@/components/GameBasedRankings";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const TournamentView = () => {
@@ -224,11 +223,12 @@ const TournamentView = () => {
           </TabsContent>
 
           <TabsContent value="rankings">
-            <Rankings 
+            <GameBasedRankings 
               players={players}
               matches={tournamentMatches}
               currentRound={currentRound}
               activeTournament={tournament}
+              setPlayers={handleSetPlayers}
             />
           </TabsContent>
         </Tabs>

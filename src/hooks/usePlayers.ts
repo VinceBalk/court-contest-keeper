@@ -21,11 +21,13 @@ export const usePlayers = () => {
         phone: player.phone || '',
         skillLevel: player.skill_level || 5,
         isActive: player.status === 'active',
-        group: player.player_group as 'top' | 'bottom', // Use the database column
+        group: player.player_group as 'top' | 'bottom',
         totalGames: 0, // Tournament-specific stats, managed in app
         totalSpecials: 0,
         totalPoints: 0,
         matchesPlayed: 0,
+        career_promotions: player.career_promotions || 0,
+        career_relegations: player.career_relegations || 0,
         overallStats: {
           totalPoints: player.ranking_points || 0,
           totalGames: (player.total_games_won || 0) + (player.total_games_lost || 0),
@@ -51,7 +53,9 @@ export const useCreatePlayer = () => {
           phone: player.phone || null,
           skill_level: player.skillLevel,
           status: player.isActive ? 'active' : 'inactive',
-          player_group: player.group, // Save the group to the database
+          player_group: player.group,
+          career_promotions: 0,
+          career_relegations: 0,
         })
         .select()
         .single();
@@ -78,11 +82,13 @@ export const useUpdatePlayer = () => {
           phone: player.phone || null,
           skill_level: player.skillLevel,
           status: player.isActive ? 'active' : 'inactive',
-          player_group: player.group, // Update the group in the database
+          player_group: player.group,
           ranking_points: player.overallStats.totalPoints,
           total_matches_played: player.overallStats.matchesPlayed,
           total_games_won: Math.floor(player.overallStats.totalGames / 2), // Rough estimate
           total_games_lost: Math.floor(player.overallStats.totalGames / 2),
+          career_promotions: player.career_promotions || 0,
+          career_relegations: player.career_relegations || 0,
         })
         .eq('id', player.id)
         .select()

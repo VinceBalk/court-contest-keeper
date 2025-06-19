@@ -8,6 +8,7 @@ import MatchGenerationControls from "./MatchGenerationControls";
 import TournamentScheduleHeader from "./TournamentScheduleHeader";
 import ManualMatchSetup from "./ManualMatchSetup";
 import { useTournamentSchedule } from "@/hooks/useTournamentSchedule";
+import { useGameBasedScoring } from "@/hooks/useGameBasedScoring";
 import { useToast } from "@/hooks/use-toast";
 
 interface TournamentScheduleProps {
@@ -63,28 +64,48 @@ const TournamentSchedule = ({
     activeTournament
   });
 
+  const { updateStatsToDatabase } = useGameBasedScoring(players, matches, activeTournament, currentRound);
+
   const handleEditMatch = (match: Match) => {
     setSelectedMatch(match);
   };
 
-  const handleSaveScore = (updatedMatch: Match) => {
+  const handleSaveScore = async (updatedMatch: Match) => {
     const updatedMatches = matches.map(m => m.id === updatedMatch.id ? updatedMatch : m);
     setMatches(updatedMatches);
     localStorage.setItem('tournament-matches', JSON.stringify(updatedMatches));
     setSelectedMatch(null);
+    
+    // Update round statistics after score change
+    try {
+      await updateStatsToDatabase();
+    } catch (error) {
+      console.error('Failed to update round statistics:', error);
+    }
   };
 
-  const handleCompleteRound = () => {
-    if (currentRound < 3) {
-      setCurrentRound(currentRound + 1);
+  const handleCompleteRound = async () => {
+    // Update statistics before completing round
+    try {
+      await updateStatsToDatabase();
+      
+      if (currentRound < 3) {
+        setCurrentRound(currentRound + 1);
+        toast({
+          title: "Round Completed",
+          description: `Round ${currentRound} completed. Statistics updated. Now on Round ${currentRound + 1}.`,
+        });
+      } else {
+        toast({
+          title: "Tournament Complete",
+          description: "All rounds completed! Statistics have been updated.",
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Round Completed",
-        description: `Round ${currentRound} completed. Now on Round ${currentRound + 1}.`,
-      });
-    } else {
-      toast({
-        title: "Tournament Complete",
-        description: "All rounds have been completed!",
+        title: "Error",
+        description: "Failed to update statistics when completing round.",
+        variant: "destructive",
       });
     }
   };

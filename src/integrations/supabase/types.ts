@@ -253,8 +253,46 @@ export type Database = {
           },
         ]
       }
+      player_round_stats: {
+        Row: {
+          created_at: string | null
+          games_won: number
+          id: string
+          matches_played: number
+          player_id: string
+          round: number
+          specials_earned: number
+          tournament_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          games_won?: number
+          id?: string
+          matches_played?: number
+          player_id: string
+          round: number
+          specials_earned?: number
+          tournament_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          games_won?: number
+          id?: string
+          matches_played?: number
+          player_id?: string
+          round?: number
+          specials_earned?: number
+          tournament_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       players: {
         Row: {
+          career_promotions: number | null
+          career_relegations: number | null
           created_at: string | null
           email: string | null
           id: string
@@ -274,6 +312,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          career_promotions?: number | null
+          career_relegations?: number | null
           created_at?: string | null
           email?: string | null
           id?: string
@@ -293,6 +333,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          career_promotions?: number | null
+          career_relegations?: number | null
           created_at?: string | null
           email?: string | null
           id?: string
