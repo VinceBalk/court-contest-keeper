@@ -121,6 +121,7 @@ const TournamentSchedule = ({
         currentRound={currentRound}
         manualPairings={manualPairings}
         players={players}
+        tournamentId={activeTournament.id}
         onUpdatePairing={updateManualPairings}
         onSaveManualMatches={saveManualMatches}
         createMultipleMatches={{ isPending: false }}

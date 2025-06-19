@@ -14,6 +14,7 @@ interface ManualMatchSetupProps {
     bottom: { team1: [string, string], team2: [string, string] }[];
   };
   players: Player[];
+  tournamentId: string;
   onUpdatePairing: (
     group: 'top' | 'bottom', 
     matchIndex: number, 
@@ -31,6 +32,7 @@ const ManualMatchSetup = ({
   currentRound,
   manualPairings,
   players,
+  tournamentId,
   onUpdatePairing,
   onSaveManualMatches,
   createMultipleMatches
@@ -58,6 +60,7 @@ const ManualMatchSetup = ({
         <ManualPairingSetup 
           manualPairings={manualPairings}
           players={players}
+          tournamentId={tournamentId}
           onUpdatePairing={onUpdatePairing}
         />
       </CardContent>
