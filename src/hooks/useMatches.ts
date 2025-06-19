@@ -102,7 +102,7 @@ export const useCreateMultipleMatches = () => {
         player1_partner_id: match.team1[1] || null,
         player2_id: match.team2[0] || null,
         player2_partner_id: match.team2[1] || null,
-        status: match.completed ? 'completed' : 'pending',
+        status: (match.completed ? 'completed' : 'pending') as 'pending' | 'in_progress' | 'completed' | 'cancelled',
         score: {
           team1_score: match.team1Score,
           team2_score: match.team2Score,
@@ -135,7 +135,7 @@ export const useUpdateMatch = () => {
         .from('matches')
         .update({
           court_number: match.court,
-          status: match.completed ? 'completed' : 'pending',
+          status: (match.completed ? 'completed' : 'pending') as 'pending' | 'in_progress' | 'completed' | 'cancelled',
           score: {
             team1_score: match.team1Score,
             team2_score: match.team2Score,
