@@ -155,12 +155,14 @@ const TournamentSchedule = ({
               group="top"
               matches={currentRoundMatches}
               players={players}
+              tournamentId={activeTournament.id}
               onEditMatch={handleEditMatch}
             />
             <MatchDisplay
               group="bottom"
               matches={currentRoundMatches}
               players={players}
+              tournamentId={activeTournament.id}
               onEditMatch={handleEditMatch}
             />
           </div>

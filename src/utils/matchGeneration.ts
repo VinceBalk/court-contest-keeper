@@ -30,7 +30,7 @@ const calculatePlayerPoints = (playerId: string, matches: Match[]): number => {
 
 export const generateFinalRoundMatches = (
   group: 'top' | 'bottom', 
-  round: number, 
+  round: number,
   players: Player[], 
   activeTournament: Tournament,
   previousMatches: Match[] = []

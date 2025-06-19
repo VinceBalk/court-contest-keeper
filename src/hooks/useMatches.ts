@@ -39,7 +39,7 @@ export const useMatches = (tournamentId?: string) => {
           team2Score: scoreData.team2_score || 0,
           completed: match.status === 'completed',
           round: match.round,
-          group: 'top' as 'top' | 'bottom', // Default group, should be managed in app logic
+          group: (match.match_group as 'top' | 'bottom') || 'top',
           tournamentId: match.tournament_id,
           specialPoints: scoreData.special_points || {},
           winnerId: match.winner_team === 1 ? (match.player1_id || '') : 
@@ -63,6 +63,7 @@ export const useCreateMatch = () => {
           round: match.round,
           match_number: parseInt(match.court.toString()) || 1,
           court_number: match.court,
+          match_group: match.group,
           player1_id: match.team1[0] || null,
           player1_partner_id: match.team1[1] || null,
           player2_id: match.team2[0] || null,
@@ -98,6 +99,7 @@ export const useCreateMultipleMatches = () => {
         round: match.round,
         match_number: parseInt(match.court.toString()) || 1,
         court_number: match.court,
+        match_group: match.group,
         player1_id: match.team1[0] || null,
         player1_partner_id: match.team1[1] || null,
         player2_id: match.team2[0] || null,
@@ -135,6 +137,7 @@ export const useUpdateMatch = () => {
         .from('matches')
         .update({
           court_number: match.court,
+          match_group: match.group,
           status: (match.completed ? 'completed' : 'pending') as 'pending' | 'in_progress' | 'completed' | 'cancelled',
           score: {
             team1_score: match.team1Score,

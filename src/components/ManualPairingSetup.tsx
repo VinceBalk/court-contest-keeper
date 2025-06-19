@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Player } from "@/pages/Index";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { useCourtSettings } from "@/hooks/useCourtSettings";
 
 interface ManualPairingSetupProps {
   manualPairings: {
@@ -10,6 +11,7 @@ interface ManualPairingSetupProps {
     bottom: { team1: [string, string], team2: [string, string] }[];
   };
   players: Player[];
+  tournamentId: string;
   onUpdatePairing: (
     group: 'top' | 'bottom', 
     matchIndex: number, 
@@ -19,7 +21,9 @@ interface ManualPairingSetupProps {
   ) => void;
 }
 
-const ManualPairingSetup = ({ manualPairings, players, onUpdatePairing }: ManualPairingSetupProps) => {
+const ManualPairingSetup = ({ manualPairings, players, tournamentId, onUpdatePairing }: ManualPairingSetupProps) => {
+  const { data: courtSettings = [] } = useCourtSettings(tournamentId);
+
   const getMatchInfo = (group: 'top' | 'bottom', matchIndex: number, currentRound: number = 1) => {
     // First 3 matches on court 1, next 3 on court 2
     const baseCourt = Math.floor(matchIndex / 3) + 1; // 1 or 2
@@ -31,6 +35,11 @@ const ManualPairingSetup = ({ manualPairings, players, onUpdatePairing }: Manual
       court: court,
       matchNumber: matchNumber
     };
+  };
+
+  const getCourtName = (courtNumber: number) => {
+    const courtSetting = courtSettings.find(cs => cs.court_number === courtNumber);
+    return courtSetting ? courtSetting.court_name : `Court ${courtNumber}`;
   };
 
   const validatePairings = () => {
@@ -89,7 +98,7 @@ const ManualPairingSetup = ({ manualPairings, players, onUpdatePairing }: Manual
                     return (
                       <div key={matchIndex} className="p-4 bg-white rounded-lg border shadow-sm">
                         <h4 className="font-medium mb-3 text-center bg-gray-100 p-2 rounded">
-                          Court {matchInfo.court} - Match {matchIndex + 1}
+                          {getCourtName(matchInfo.court)} - Match {matchIndex + 1}
                         </h4>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-3">
@@ -98,7 +107,7 @@ const ManualPairingSetup = ({ manualPairings, players, onUpdatePairing }: Manual
                               <select
                                 value={pairing.team1[0]}
                                 onChange={(e) => onUpdatePairing(group, matchIndex, 'team1', 0, e.target.value)}
-                                className="w-full p-2 border rounde text-sm focus:ring-2 focus:ring-blue-500"
+                                className="w-full p-2 border rounded text-sm focus:ring-2 focus:ring-blue-500"
                               >
                                 <option value="">Select Player 1</option>
                                 {availablePlayers.map(player => (

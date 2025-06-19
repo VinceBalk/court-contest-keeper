@@ -4,17 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Player, Match } from "@/pages/Index";
 import { Edit } from "lucide-react";
+import { useCourtSettings, CourtSetting } from "@/hooks/useCourtSettings";
 
 interface MatchDisplayProps {
   group: "top" | "bottom";
   matches: Match[];
   players: Player[];
+  tournamentId: string;
   onEditMatch?: (match: Match) => void;
 }
 
-const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProps) => {
+const MatchDisplay = ({ group, matches, players, tournamentId, onEditMatch }: MatchDisplayProps) => {
   // Filter matches by group
   const groupMatches = matches.filter(match => match.group === group);
+  
+  const { data: courtSettings = [] } = useCourtSettings(tournamentId);
 
   const getPlayerName = (playerId: string) => {
     const player = players.find(p => p.id === playerId);
@@ -33,6 +37,11 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
     }, 0);
     
     return (typeof baseScore === 'number' ? baseScore : 0) + teamSpecialPoints;
+  };
+
+  const getCourtName = (courtNumber: number) => {
+    const courtSetting = courtSettings.find(cs => cs.court_number === courtNumber);
+    return courtSetting ? courtSetting.court_name : `Court ${courtNumber}`;
   };
 
   return (
@@ -56,7 +65,7 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
             <CardHeader className="pb-2">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-sm">
-                  Court {match.court} - {group === 'top' ? 'Linker' : 'Rechter'} Rijtje
+                  {getCourtName(match.court)} - {group === 'top' ? 'Linker' : 'Rechter'} Rijtje
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   {match.completed ? (
