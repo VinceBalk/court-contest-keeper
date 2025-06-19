@@ -93,10 +93,19 @@ export const useTournamentSchedule = ({
       ];
     } else {
       if (isManualMode) {
-        newMatches = [
-          ...generateManualMatches('top', currentRound, manualPairings.top, activeTournament),
-          ...generateManualMatches('bottom', currentRound, manualPairings.bottom, activeTournament)
-        ];
+        try {
+          newMatches = [
+            ...generateManualMatches('top', currentRound, manualPairings.top, activeTournament),
+            ...generateManualMatches('bottom', currentRound, manualPairings.bottom, activeTournament)
+          ];
+        } catch (error: any) {
+          toast({
+            title: "Error",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
       } else {
         newMatches = [
           ...generateRandomMatches('top', currentRound, players, activeTournament),
@@ -144,6 +153,8 @@ export const useTournamentSchedule = ({
         ...generateManualMatches('top', currentRound, manualPairings.top, activeTournament),
         ...generateManualMatches('bottom', currentRound, manualPairings.bottom, activeTournament)
       ];
+
+      console.log('Generated manual matches:', newMatches);
 
       const matchesWithTournamentId = newMatches.map(match => ({
         ...match,

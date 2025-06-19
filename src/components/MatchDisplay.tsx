@@ -3,6 +3,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Player, Match } from "@/pages/Index";
+import { Edit } from "lucide-react";
 
 interface MatchDisplayProps {
   group: "top" | "bottom";
@@ -49,7 +50,7 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
         groupMatches.map((match) => (
           <Card 
             key={match.id} 
-            className="cursor-pointer hover:bg-muted/50 transition-colors" 
+            className="cursor-pointer hover:bg-muted/50 transition-colors hover:shadow-md" 
             onClick={() => onEditMatch?.(match)}
           >
             <CardHeader className="pb-2">
@@ -57,34 +58,49 @@ const MatchDisplay = ({ group, matches, players, onEditMatch }: MatchDisplayProp
                 <CardTitle className="text-sm">
                   Court {match.court} - {group === 'top' ? 'Linker' : 'Rechter'} Rijtje
                 </CardTitle>
-                {match.completed && (
-                  <Badge variant="secondary">Completed</Badge>
-                )}
+                <div className="flex items-center gap-2">
+                  {match.completed ? (
+                    <Badge variant="secondary">Completed</Badge>
+                  ) : (
+                    <Badge variant="outline">Pending</Badge>
+                  )}
+                  <Edit className="h-4 w-4 text-muted-foreground" />
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">
               <div className="space-y-2">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center p-2 bg-blue-50 rounded">
                   <div className="flex flex-col">
-                    <span className="font-medium">
+                    <span className="font-medium text-blue-800">
                       {match.team1.map(id => getPlayerName(id)).join(" & ")}
                     </span>
                   </div>
-                  <span className="text-lg font-bold">
+                  <span className="text-lg font-bold text-blue-800">
                     {getTotalScore(match, 1)}
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="text-center text-sm text-muted-foreground font-medium">
+                  VS
+                </div>
+                <div className="flex justify-between items-center p-2 bg-green-50 rounded">
                   <div className="flex flex-col">
-                    <span className="font-medium">
+                    <span className="font-medium text-green-800">
                       {match.team2.map(id => getPlayerName(id)).join(" & ")}
                     </span>
                   </div>
-                  <span className="text-lg font-bold">
+                  <span className="text-lg font-bold text-green-800">
                     {getTotalScore(match, 2)}
                   </span>
                 </div>
               </div>
+              {!match.completed && (
+                <div className="mt-3 text-center">
+                  <Badge variant="outline" className="text-xs">
+                    Click to enter score
+                  </Badge>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))

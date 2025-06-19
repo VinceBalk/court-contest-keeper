@@ -218,11 +218,15 @@ export const generateManualMatches = (
     throw new Error(`Please set up all 6 matches for ${group === 'top' ? 'Linker Rijtje' : 'Rechter Rijtje'}`);
   }
 
-  // Validate that all player IDs are provided
+  // Validate that all player IDs are provided and not empty
   for (let i = 0; i < manualPairings.length; i++) {
     const pairing = manualPairings[i];
     if (!pairing.team1[0] || !pairing.team1[1] || !pairing.team2[0] || !pairing.team2[1]) {
       throw new Error(`Match ${i + 1} is incomplete. Please select all players.`);
+    }
+    // Check for empty strings
+    if (pairing.team1[0] === '' || pairing.team1[1] === '' || pairing.team2[0] === '' || pairing.team2[1] === '') {
+      throw new Error(`Match ${i + 1} has empty player selections. Please select all players.`);
     }
   }
 
@@ -233,16 +237,15 @@ export const generateManualMatches = (
     const baseCourt = Math.floor(matchIndex / 3) + 1; // 1 or 2
     // For top group: courts 1-2, for bottom group: courts 3-4
     const court = group === 'top' ? baseCourt : baseCourt + 2;
-    const matchNumber = getMatchNumber(matchIndex, round);
     
     newMatches.push({
-      id: `match-${group}-${round}-${matchIndex}`,
+      id: `match-${group}-${round}-${matchIndex}-${Date.now()}`,
       tournamentId: activeTournament.id,
       round,
       group,
       court,
-      team1: pairing.team1,
-      team2: pairing.team2,
+      team1: [pairing.team1[0], pairing.team1[1]],
+      team2: [pairing.team2[0], pairing.team2[1]],
       team1Score: 0,
       team2Score: 0,
       specialPoints: {},
