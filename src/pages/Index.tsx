@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import MainHeader from "@/components/MainHeader";
@@ -20,6 +19,8 @@ export interface Player {
   totalSpecials: number;
   totalPoints: number;
   matchesPlayed: number;
+  career_promotions?: number;
+  career_relegations?: number;
   overallStats: {
     totalPoints: number;
     totalGames: number;
